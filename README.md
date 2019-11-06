@@ -5,6 +5,10 @@ the server. Server opens another file and writes the received information into
 it. This is a beta version, as of now one client connects to the server, final
 version will have 3 clients connecting simultaneously.
 
+### Next on the Todo list
+integrate an epoll
+
+
 ### Getting Started
 clone the project by typing in the command line:
 ```
