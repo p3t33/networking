@@ -21,7 +21,9 @@ namespace med
 class EPollWrapper
 {
 public:
-	EPollWrapper(int epoll_flags = 0, int max_event = 10);
+	EPollWrapper(int epoll_flags = 0,
+                 int max_event = 10,
+                 int event_flag = EPOLLIN);
 	~EPollWrapper();
 
     EPollWrapper(const EPollWrapper&) = delete;
@@ -38,6 +40,10 @@ public:
 private: 
     int m_epoll_fd;
     int m_max_event;
+
+    // TODO: maybe add a vector instead of array
+    // when epoll_wait returns it filles <m_epoll_events> array with 
+    // epoll_event structs that are ready to be to read from.
     struct epoll_event* m_epoll_events;
 };
 

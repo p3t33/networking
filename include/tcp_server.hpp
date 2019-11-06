@@ -27,6 +27,7 @@
 /*                                                          ~~~~~~~~~~~~~~~~~ */
 
 #include "data_proxy.hpp"
+#include "epoll_wrapper.hpp"
 /*============================================================================*/
 
 
@@ -69,6 +70,7 @@ private:
     std::string m_buffer;
 
     DataProxy m_raw_data;
+    EPollWrapper m_epoll;
 };
 
 } // namespace med

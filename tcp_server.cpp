@@ -64,6 +64,8 @@ TCPServer::~TCPServer()
     close(m_socket[SOCKET_FD]);
     std::cout << "======================== dtor =================" << std::endl;
     m_raw_data.write_to_file(); 
+
+    m_epoll.~EPollWrapper(); // close epoll file descriptor 
 }
 
 /*============================================================================*/
@@ -77,30 +79,39 @@ void TCPServer::communicate_with_client()
     std::string word;
 
     while(0 != m_buffer.compare("_end_of_file_"))
-    { 
-        m_buffer.clear();
+    {
+        int ready_file_descreptors = m_epoll.wait();
 
-        char buffer[80]; 
-        bzero(buffer, sizeof(buffer)); 
-  
-        // read the message from client and copy it in buffer 
-        read(m_socket[LISTEN_FD], buffer, sizeof(buffer)); 
+        for (int i = 0; i < ready_file_descreptors; ++i)
+        {
+            if (m_epoll[i].data.fd == m_socket[LISTEN_FD])
+            {
+                m_buffer.clear();
 
-        m_buffer.assign(buffer);
-        m_raw_data.gate_way(m_buffer.c_str());
-       
-       // m_file.write(m_buffer.c_str(), m_buffer.length());
-       
-        std::cout << "Received from client: " << m_buffer.c_str() << std::endl;
+                char buffer[80]; 
+                bzero(buffer, sizeof(buffer)); 
+        
+                // read the message from client and copy it in buffer 
+                read(m_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
-        // save incoming word from server
-        m_file_data.push_back(m_buffer.c_str());
+                m_buffer.assign(buffer);
+                m_raw_data.gate_way(m_buffer.c_str());
+            
+                // m_file.write(m_buffer.c_str(), m_buffer.length());
+            
+                std::cout << "Received from client: "
+                          << m_buffer.c_str() << std::endl;
 
-        bzero(buffer, sizeof(buffer));
+                // save incoming word from server
+                m_file_data.push_back(m_buffer.c_str());
 
-        // and send that buffer to client 
-        write(m_socket[LISTEN_FD], "All good\n", 10); 
-    } 
+                bzero(buffer, sizeof(buffer));
+
+                // and send that buffer to client 
+                write(m_socket[LISTEN_FD], "All good\n", 10); 
+            } 
+        }    
+    }    
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -155,7 +166,9 @@ void TCPServer::wait_for_client()
     if (accept_unsuccessfully == m_socket[LISTEN_FD])
     {
         throw std::runtime_error("server acccept");
-    } 
+    }
+
+    m_epoll.add(m_socket[LISTEN_FD]);
 }
 
 } // namespace med

@@ -40,12 +40,14 @@ namespace med
 //  a hint to the kernel about how to initially dimension internal
 //  data structures. (Since Linux 2.6.8, the size argument is ignored)
 
-EPollWrapper::EPollWrapper(int epoll_flags, int max_event):
+EPollWrapper::EPollWrapper(int epoll_flags, int max_event, int event_flag):
                                     m_epoll_fd(epoll_create1(epoll_flags)),
                                     m_max_event(max_event)
 {
    m_epoll_events = new epoll_event[m_max_event];
-   m_epoll_events->events = EPOLLIN;
+   // event_flag = EPOLLIN when used on a server that only handles receiving 
+   // data
+   m_epoll_events->events = event_flag;  
    m_epoll_events->data.fd = 0;
 }
                                                                 
@@ -70,12 +72,13 @@ EPollWrapper::EPollWrapper(int epoll_flags, int max_event):
 /*                                                                        ~~~ */
 void EPollWrapper::add(int file_descriptor_to_add,  int events_flag)
 {
-
+   // new epoll_event struct for file descriptor to be added is created and
+   // initialised 
    struct epoll_event new_event = {};
-
    new_event.data.fd = file_descriptor_to_add;
    new_event.events = events_flag;
 
+   // file descriptor is added
    epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, file_descriptor_to_add, &new_event);
 }
 
@@ -99,7 +102,6 @@ int EPollWrapper::wait(int maxevents, int time_out_ms)
                                 m_epoll_events,
                                 maxevents,
                                 time_out_ms);
-
    if(-1 == event_count)
    {
       throw std::runtime_error("epoll_wait fail\n"); 
