@@ -1,6 +1,5 @@
 #ifndef _TCP_SERVER_
 #define _TCP_SERVER_
-
 /*******************************************************************************
 *                             tcp client
 *                       =====================
@@ -11,12 +10,24 @@
 * Created: 5.11.19
 * Last update: 6.11.19
 *******************************************************************************/
+
+
+/*============================================================================*/
+/*                                  Definitions                               */
+/*============================================================================*/
+/*                                                      standard  directories */
+/*                                                      ~~~~~~~~~~~~~~~~~~~~~ */
 #include <vector> // m_file_data
 #include <arpa/inet.h> // sockaddr_in
 #include <string> // std::string
 #include <fstream> // std::ofstream m_file
 
+/*============================================================================*/
+/*                                                          local directories */
+/*                                                          ~~~~~~~~~~~~~~~~~ */
+
 #include "data_proxy.hpp"
+/*============================================================================*/
 
 
 namespace med
@@ -24,6 +35,9 @@ namespace med
 
 class TCPServer
 {
+
+private:
+    using socket_address_t  = struct sockaddr;
     enum Address {SERVER, CLIENT};
     enum Descriptor {SOCKET_FD, LISTEN_FD}; 
 
@@ -36,15 +50,17 @@ public:
     TCPServer(const TCPServer&&) = delete;
     TCPServer& operator=(TCPServer&&) = delete;
 
+    // Interface / API
+    // ----------------------------------------------------------------
     void communicate_with_client();
+    // ------------------------------------------------------------------
 
 private:
-
-    // auxiliary
-    using socket_address_t  = struct sockaddr;
-
+    // Auxilary ctor functions
+    // ------------------------------------------------------------------
     void configure_socket();
     void wait_for_client();
+    // ------------------------------------------------------------------
 
     std::vector<std::string> m_file_data;
     size_t m_incoming_port_number[3];

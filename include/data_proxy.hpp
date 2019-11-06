@@ -12,9 +12,17 @@
 *******************************************************************************/
 
 
+/*============================================================================*/
+/*                                  Definitions                               */
+/*============================================================================*/
+/*                                                       standard directories */
+/*                                                       ~~~~~~~~~~~~~~~~~~~~ */
 #include <string> // td::string
 #include <fstream> // std::ofstream
 #include <vector> // std::vector
+
+/*============================================================================*/
+
 
 namespace med
 {
@@ -30,8 +38,11 @@ class DataProxy
         DataProxy(const DataProxy&&) = delete;
         DataProxy& operator=(const DataProxy&&) = delete;
 
+        // Interface / API
+        // ------------------------------------------------------------------
         void gate_way(const std::string& string);
         void write_to_file();
+        // ------------------------------------------------------------------
 
     private:
         std::ofstream m_file;

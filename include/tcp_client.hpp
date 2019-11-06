@@ -10,14 +10,17 @@
 * Created: 5.11.19
 * Last update: 6.11.19
 *******************************************************************************/
-
-
+/*============================================================================*/
+/*                                  Definitions                               */
+/*============================================================================*/
+/*                                                      standard  directories */
+/*                                                      ~~~~~~~~~~~~~~~~~~~~~ */
 #include <arpa/inet.h> // sockaddr_in
 #include <string> // std::string
-#include <vector>
+#include <vector> // vector
 #include <fstream> // std::ofstream m_file
 
-
+/*============================================================================*/
 
 namespace med
 {
@@ -36,14 +39,19 @@ public:
     TCPClient(const TCPClient&&) = delete;
     TCPClient& operator=(const TCPClient&&) = delete;
 
+    // Interface / API
+    // ------------------------------------------------------------------
     void communicate_with_server();
+    // ------------------------------------------------------------------
 
 private:
-    // auxiliary functions for the ctor
-    void configure_socket(size_t port, std::string& ip_address);
-    
     using socket_address_t  = struct sockaddr;
+
+    // Auxilary ctor functions
+    // ------------------------------------------------------------------
+    void configure_socket(size_t port, std::string& ip_address);
     void connect_to_server();
+    // ------------------------------------------------------------------
 
     std::ifstream m_file; // read_only from file
     int m_socket_file_descriptor;
