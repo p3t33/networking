@@ -2,10 +2,16 @@
 
 # ompile source code #
 ######################
+
 #client source
-g++ -std=c++11 -pedantic-errors -Wall -Wextra -g tcp_client.cpp client.cpp -o tcp_client.out
+g++ -std=c++11 -pedantic-errors -Wall -Wextra -g -o tcp_client.out \
+tcp_client.cpp \
+client.cpp 
 #server source
-g++ -std=c++11 -pedantic-errors -Wall -Wextra -g tcp_server.cpp data_proxy.cpp server.cpp -o tcp_server.out
+g++ -std=c++11 -pedantic-errors -Wall -Wextra -g -o tcp_server.out \
+tcp_server.cpp \
+data_proxy.cpp \
+server.cpp
 
 # open seconed terminal to run tcp_client.out #
 ###############################################
