@@ -24,6 +24,9 @@ to compile ony:
 ```
 unit testing for data_proxy.cpp is available at ./unit_test
 
+After server and client ended communication data sent to server can be found
+at ./server_output.txt
+
 ### Compilers and operating systems
 code was compiled with GNU g++ using std=c++11. It was tested on ubuntu 18.04 LTS.
 code was tested for memory leaks via valgrind 3.13.0
