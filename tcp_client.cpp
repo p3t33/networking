@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 5.11.19
+* Last update: 6.11.19
 *******************************************************************************/
 
 
@@ -32,7 +32,7 @@ static const int connected_successfully = 0;
 static const size_t indefinitely = 1;
 
 /*============================================================================*/
-namespace hrd9
+namespace med
 {
     
 /*============================================================================*/

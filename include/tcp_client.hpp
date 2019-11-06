@@ -8,7 +8,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 5.11.19
+* Last update: 6.11.19
 *******************************************************************************/
 
 
@@ -19,7 +19,7 @@
 
 
 
-namespace hrd9
+namespace med
 {
 
 class TCPClient

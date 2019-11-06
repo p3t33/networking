@@ -9,15 +9,17 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 5.11.19
+* Last update: 6.11.19
 *******************************************************************************/
 #include <vector> // m_file_data
 #include <arpa/inet.h> // sockaddr_in
 #include <string> // std::string
 #include <fstream> // std::ofstream m_file
 
+#include "data_proxy.hpp"
 
-namespace hrd9
+
+namespace med
 {
 
 class TCPServer
@@ -26,7 +28,7 @@ class TCPServer
     enum Descriptor {SOCKET_FD, LISTEN_FD}; 
 
 public:
-    TCPServer(std::string server_file = "server_output.txt");
+    TCPServer();
     ~TCPServer();
 
     TCPServer(const TCPServer&) = delete;
@@ -48,8 +50,9 @@ private:
     size_t m_incoming_port_number[3];
     int m_socket[2];
     struct sockaddr_in m_address[2];
-    std::ofstream m_file; // write only
     std::string m_buffer;
+
+    DataProxy m_raw_data;
 };
 
 } // namespace hrd9

@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 5.11.19
+* Last update: 6.11.19
 *******************************************************************************/
 
 /*============================================================================*/
@@ -31,7 +31,7 @@ static const int indefinitely = 1;
 static const int accept_unsuccessfully = -1;
 
 /*============================================================================*/
-namespace hrd9
+namespace med
 {
 
 /*============================================================================*/
@@ -42,25 +42,27 @@ namespace hrd9
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-TCPServer::TCPServer(std::string server_file):
+TCPServer::TCPServer():
                                       m_file_data(0),
                                       m_incoming_port_number{9090, 9091, 9092},
                                       m_socket{{}},
                                       m_address({}),
-                                      m_buffer("")
+                                      m_buffer(""),
+                                      m_raw_data("server_output.txt")
 {
     std::cout << "=================== Server ====================" << std::endl;
-    m_file.open(server_file, std::fstream::out | std::fstream::app);
+/*     m_file.open(server_file, std::fstream::out | std::fstream::app);
     if (m_file.is_open())
     {
         std::cout << "file is open" << std::endl;
     }
     m_file << std::flush;
     m_file << "hello";
-    m_file.write("kobi",5);
+    m_file.write("kobi",5); */
 
     configure_socket();
     wait_for_client();
+    
 }
                                                          
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -69,7 +71,7 @@ TCPServer::TCPServer(std::string server_file):
 TCPServer::~TCPServer()
 {
     close(m_socket[SOCKET_FD]);
-    m_file.close();
+    //m_file.close();
 }
 
 /*============================================================================*/
@@ -91,6 +93,7 @@ void TCPServer::communicate_with_client()
         read(m_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
         m_buffer.assign(buffer);
+        m_raw_data.write_to_file(m_buffer.c_str());
        
        // m_file.write(m_buffer.c_str(), m_buffer.length());
        
