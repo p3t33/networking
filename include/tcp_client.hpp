@@ -51,5 +51,5 @@ private:
     std::string m_buffer;
 };
 
-} // namespace hrd9
+} // namespace med
 #endif //_TCP_CLIENT_

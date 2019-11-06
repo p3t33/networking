@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# ompile source code #
+# delete old server_output.txt #
+################################
+rm server_output.txt
+
+# compile source code #
 ######################
 
 #client source

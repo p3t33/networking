@@ -51,18 +51,9 @@ TCPServer::TCPServer():
                                       m_raw_data("server_output.txt")
 {
     std::cout << "=================== Server ====================" << std::endl;
-/*     m_file.open(server_file, std::fstream::out | std::fstream::app);
-    if (m_file.is_open())
-    {
-        std::cout << "file is open" << std::endl;
-    }
-    m_file << std::flush;
-    m_file << "hello";
-    m_file.write("kobi",5); */
 
     configure_socket();
-    wait_for_client();
-    
+    wait_for_client(); 
 }
                                                          
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -71,7 +62,8 @@ TCPServer::TCPServer():
 TCPServer::~TCPServer()
 {
     close(m_socket[SOCKET_FD]);
-    //m_file.close();
+    std::cout << "======================== dtor =================" << std::endl;
+    m_raw_data.write_to_file(); 
 }
 
 /*============================================================================*/
@@ -84,8 +76,10 @@ void TCPServer::communicate_with_client()
 {
     std::string word;
 
-    while(indefinitely)
+    while(0 != m_buffer.compare("_end_of_file_"))
     { 
+        m_buffer.clear();
+
         char buffer[80]; 
         bzero(buffer, sizeof(buffer)); 
   
@@ -93,29 +87,19 @@ void TCPServer::communicate_with_client()
         read(m_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
         m_buffer.assign(buffer);
-        m_raw_data.write_to_file(m_buffer.c_str());
+        m_raw_data.gate_way(m_buffer.c_str());
        
        // m_file.write(m_buffer.c_str(), m_buffer.length());
        
-        
         std::cout << "Received from client: " << m_buffer.c_str() << std::endl;
 
         // save incoming word from server
         m_file_data.push_back(m_buffer.c_str());
-        m_buffer.clear();
 
         bzero(buffer, sizeof(buffer));
 
-        sleep(1); 
-  
         // and send that buffer to client 
         write(m_socket[LISTEN_FD], "All good\n", 10); 
-  
-        // if msg contains "Exit" then server exit and chat ended. 
-        if ("exit\n" == m_buffer)
-        {
-            break;
-        }
     } 
 }
 
@@ -148,8 +132,6 @@ void TCPServer::configure_socket()
     {
         throw std::runtime_error("socket bind"); 
     } 
-
-
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -176,4 +158,4 @@ void TCPServer::wait_for_client()
     } 
 }
 
-} // namespace hrd9
+} // namespace med

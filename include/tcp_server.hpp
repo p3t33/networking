@@ -55,5 +55,5 @@ private:
     DataProxy m_raw_data;
 };
 
-} // namespace hrd9
+} // namespace med
 #endif // _TCP_SERVER_

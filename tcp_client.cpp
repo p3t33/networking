@@ -83,19 +83,14 @@ void TCPClient::communicate_with_server()
     {
         write(m_socket_file_descriptor, word.c_str(), word.size());
 
-        sleep(1);
-
         read(m_socket_file_descriptor, buffer, sizeof(buffer));
 
         m_buffer.assign(buffer);
 
         std::cout << "Received from server: " << m_buffer.c_str();
-
-        if ("exit\n" == m_buffer)
-        {
-            break;
-        }
     }
+
+    write(m_socket_file_descriptor, "_end_of_file_" ,13);
 }
 
 /*============================================================================*/
@@ -131,4 +126,4 @@ void TCPClient::connect_to_server()
     }
 }
 
-} // namespace hrd9
+} // namespace med

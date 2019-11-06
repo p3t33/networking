@@ -53,10 +53,27 @@ DataProxy::~DataProxy()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                                                              write_to_file */
 /*                                                              ~~~~~~~~~~~~~ */
-void DataProxy::write_to_file(const std::string& string)
+void DataProxy::write_to_file()
 {
-    m_file << std::flush;
-    m_file << string.c_str() << " ";
+    // pop _end_of_file_ from the vector
+    m_data.pop_back();
+
+
+    std::cout << "client sent " << m_data.size() << " words" << std::endl;
+    std::cout << "=========================================" << std::endl;
+
+    for (auto iterator: m_data)
+    {
+        m_file << std::flush;
+        m_file << iterator.c_str() << " ";
+        m_file << std::endl;
+    }
 }
 
-} // namespace hrd9
+
+void DataProxy::gate_way(const std::string& string)
+{
+    m_data.push_back(string);
+}
+
+} // namespace med

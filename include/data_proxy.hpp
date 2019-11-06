@@ -12,8 +12,9 @@
 *******************************************************************************/
 
 
-#include <string>
-#include <fstream>
+#include <string> // td::string
+#include <fstream> // std::ofstream
+#include <vector> // std::vector
 
 namespace med
 {
@@ -29,12 +30,14 @@ class DataProxy
         DataProxy(const DataProxy&&) = delete;
         DataProxy& operator=(const DataProxy&&) = delete;
 
-        // write to an already existing log file 
-        void write_to_file(const std::string& string);
+        void gate_way(const std::string& string);
+        void write_to_file();
 
     private:
         std::ofstream m_file;
+        std::vector<std::string> m_data;
+        std::string m_string;
 };
 
-} // // namespace hrd9
-#endif // _DataProxy_
+} // namespace med
+#endif // _DATA_PROXY_

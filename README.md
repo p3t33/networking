@@ -1,7 +1,9 @@
 # Networking
 This is an implementation of a client server communication over TCP.
-client opens a file connect to a server and sends the content of the file to the
-server. Server opens another file and writes the received information into it.
+client opens a file connects to a server and sends the content of the file to
+the server. Server opens another file and writes the received information into
+it. This is a beta version, as of now one client connects to the server, final
+version will have 3 clients connecting simultaneously.
 
 ### Getting Started
 clone the project by typing in the command line:
