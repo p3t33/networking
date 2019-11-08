@@ -68,6 +68,8 @@ void DataProxy::write_to_file()
         m_file << iterator.c_str() << " ";
         m_file << std::endl;
     }
+
+    // std::cout << "============= Statistics ================" << std::endl;
 }
 
 

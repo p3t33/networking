@@ -21,6 +21,7 @@
 #include <arpa/inet.h> // sockaddr_in
 #include <string> // std::string
 #include <fstream> // std::ofstream m_file
+#include <thread> // std::thread
 
 /*============================================================================*/
 /*                                                          local directories */
@@ -53,7 +54,7 @@ public:
 
     // Interface / API
     // ----------------------------------------------------------------
-    void communicate_with_client();
+
     // ------------------------------------------------------------------
 
 private:
@@ -61,6 +62,8 @@ private:
     // ------------------------------------------------------------------
     void configure_socket();
     void wait_for_client();
+    void communicate_with_client();
+    void execute_communication();
     // ------------------------------------------------------------------
 
     std::vector<std::string> m_file_data;
@@ -71,6 +74,7 @@ private:
 
     DataProxy m_raw_data;
     EPollWrapper m_epoll;
+    std::vector<std::thread> m_thread;
 };
 
 } // namespace med

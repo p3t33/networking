@@ -17,6 +17,7 @@
 #include <string.h> // bzero
 #include <unistd.h>  // write
 #include <iostream> // std::cout
+#include <thread> //std::thread
 /*============================================================================*/
 /*                                                          local directories */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
@@ -48,12 +49,11 @@ TCPServer::TCPServer():
                                       m_socket{{}},
                                       m_address({}),
                                       m_buffer(""),
-                                      m_raw_data("server_output.txt")
+                                      m_raw_data("server_output.txt"),
+                                      m_thread(3)
 {
     std::cout << "=================== Server ====================" << std::endl;
-
-    configure_socket();
-    wait_for_client(); 
+    m_thread[0] = std::thread(&TCPServer::execute_communication, this);
 }
                                                          
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -61,6 +61,14 @@ TCPServer::TCPServer():
 /*                                                          ~~~~~~~~~~~~~~~~~ */
 TCPServer::~TCPServer()
 {
+
+    m_thread[0].join();
+    // wait for all server communication threads to finish
+/*     for (auto &iterator : m_pp)
+    {
+        iterator.join();
+    } */
+
     close(m_socket[SOCKET_FD]);
     std::cout << "======================== dtor =================" << std::endl;
     m_raw_data.write_to_file(); 
@@ -75,7 +83,7 @@ TCPServer::~TCPServer()
 /*                                                    communicate_with_client */
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
 void TCPServer::communicate_with_client()
-{
+{    
     std::string word;
 
     while(0 != m_buffer.compare("_end_of_file_"))
@@ -169,6 +177,14 @@ void TCPServer::wait_for_client()
     }
 
     m_epoll.add(m_socket[LISTEN_FD]);
+
+    communicate_with_client();
+}
+
+void TCPServer::execute_communication()
+{
+    configure_socket();
+    wait_for_client();
 }
 
 } // namespace med

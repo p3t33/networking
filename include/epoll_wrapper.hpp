@@ -41,9 +41,10 @@ private:
     int m_epoll_fd;
     int m_max_event;
 
-    // TODO: maybe add a vector instead of array
     // when epoll_wait returns it filles <m_epoll_events> array with 
     // epoll_event structs that are ready to be to read from.
+    //
+    // pointer is used because number events determented in run time.
     struct epoll_event* m_epoll_events;
 };
 

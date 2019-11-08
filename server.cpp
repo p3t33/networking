@@ -18,7 +18,7 @@ int main()
     try
     {
         TCPServer test;
-        test.communicate_with_client();
+        //test.communicate_with_client();
     }
     
     catch(const std::exception& error)
