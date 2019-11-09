@@ -90,8 +90,9 @@ TCPServer::~TCPServer()
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
 void TCPServer::communicate_with_client(int* communication_socket)
 {
-    //struct epoll_event* mepoll_events = new epoll_event[10];
-    
+    // epoll is thread safe, but each thread should have its own epoll_event
+    // ready list array or else undefined behavior may occur due to race
+    // conditions
     epoll_event epoll_events[chanels_num];
     std::string word;
 

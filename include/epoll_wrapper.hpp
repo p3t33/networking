@@ -34,7 +34,8 @@ public:
     void add(int file_descriptor_to_add,
              uint32_t events_flag = (EPOLLET | EPOLLIN));
     void remove(int file_descriptor_to_remove);
-    int wait(epoll_event* epoll_events, int maxevents = 10, int time_out_ms = 5000);
+    // time_out_ms = -1 makes epoll block “forever”
+    int wait(epoll_event* epoll_events, int maxevents = 10, int time_out_ms = -1);
     const epoll_event& operator[](const int index);
 
 private: 
