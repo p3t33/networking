@@ -35,30 +35,29 @@ namespace med
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*  									                             Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-// The epoll_size argument specifies the number of file descriptors that
-// we expect to monitor his argument is not an upper limit, but rather
-//  a hint to the kernel about how to initially dimension internal
-//  data structures. (Since Linux 2.6.8, the size argument is ignored)
-
-EPollWrapper::EPollWrapper(int epoll_flags, int max_event, int event_flag):
-                                    m_epoll_fd(epoll_create1(epoll_flags)),
-                                    m_max_event(max_event)
-{
-   m_epoll_events = new epoll_event[m_max_event];
-   // event_flag = EPOLLIN when used on a server that only handles receiving 
-   // data
-   m_epoll_events->events = event_flag;  
-   m_epoll_events->data.fd = 0;
-}
+EPollWrapper::EPollWrapper(bool multithread_flag,
+                           int create_flag,
+                           int max_event):
+                                         m_epoll_fd(epoll_create1(create_flag)),
+                                         m_max_event(max_event),
+                                         m_multithread_flag(multithread_flag)
+                                         
+{}
                                                                 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*  									                              Destructor / dtor */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
- EPollWrapper::~EPollWrapper()
- {
-    close(m_epoll_fd);
-    delete[] m_epoll_events;
- }
+EPollWrapper::~EPollWrapper()
+{
+   close(m_epoll_fd);
+
+   // in case of single threaded mode resources allocated in wait() needs to be
+   // deleted
+   if (false == m_multithread_flag)
+   {
+      delete[] m_epoll_events;
+   }
+}
 
 /*============================================================================*/
 /*                               ~~~~~~~~~~~~~~~~                             */
@@ -66,11 +65,11 @@ EPollWrapper::EPollWrapper(int epoll_flags, int max_event, int event_flag):
 /*                               ~~~~~~~~~~~~~~~~                             */
 
 //epoll_ctl is used to add, remove, or otherwise control the monitoring of
-// an fd in the set 
+// an fd in the epoll set / interest list
 
 /*                                                                        add */
 /*                                                                        ~~~ */
-void EPollWrapper::add(int file_descriptor_to_add,  int events_flag)
+void EPollWrapper::add(int file_descriptor_to_add,  uint32_t events_flag)
 {
    // new epoll_event struct for file descriptor to be added is created and
    // initialised 
@@ -78,7 +77,7 @@ void EPollWrapper::add(int file_descriptor_to_add,  int events_flag)
    new_event.data.fd = file_descriptor_to_add;
    new_event.events = events_flag;
 
-   // file descriptor is added
+   // file descriptor is added with EPOLL_CTL_ADD flag
    epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, file_descriptor_to_add, &new_event);
 }
 
@@ -93,15 +92,34 @@ void EPollWrapper::remove(int file_descriptor_to_remove)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                                       wait */
 /*                                                                       ~~~~ */
-// The size of the array is given by the maxevents argument 
-// The timeout argument specifies the time to wait for an
-// event, in milliseconds; a value of -1 means to wait indefinitely.
-int EPollWrapper::wait(int maxevents, int time_out_ms)
+
+int EPollWrapper::wait(epoll_event* epoll_events,
+                       int maxevents,
+                       int time_out_ms)
 {
-   int event_count = epoll_wait(m_epoll_fd,
-                                m_epoll_events,
-                                maxevents,
-                                time_out_ms);
+   int event_count = 0;
+
+   // if more then one thread have access to the epoll it most provide its own
+   // separate  event array (epoll_event) to store ready fd.   
+   if (true == m_multithread_flag)
+   {
+      event_count = epoll_wait(m_epoll_fd,
+                               epoll_events,
+                               maxevents,
+                               time_out_ms);
+   }
+   // single threaded mode, Class takes care of allocation of event array
+   //  store ready fd
+   else 
+   {
+      m_epoll_events = new epoll_event[m_max_event];
+
+      event_count = epoll_wait(m_epoll_fd,
+                               epoll_events,
+                               maxevents,
+                               time_out_ms);
+   }
+   
    if(-1 == event_count)
    {
       throw std::runtime_error("epoll_wait fail\n"); 

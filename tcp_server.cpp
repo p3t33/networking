@@ -27,7 +27,7 @@
 /*                                                           ~~~~~~~~~~~~~~~~ */
 static const int failed_to_create_socket = -1;
 static const int socket_bind_successfully = 0;
-static const int ready_to_accept_connections = 0;
+static const int ready_connections = 0;
 static const int indefinitely = 1;
 static const int accept_unsuccessfully = -1;
 
@@ -44,16 +44,26 @@ namespace med
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
 TCPServer::TCPServer():
+                                      m_socket{chanels_num},
+                                      m_address{chanels_num},
+                                      m_thread{chanels_num},
+                                      m_port{TCP1, TCP2, TCP3},
                                       m_file_data(0),
-                                      m_incoming_port_number{9090, 9091, 9092},
-                                      m_socket{{}},
-                                      m_address({}),
                                       m_buffer(""),
                                       m_raw_data("server_output.txt"),
-                                      m_thread(3)
+                                      m_epoll(epoll_multithread_flag)
 {
     std::cout << "=================== Server ====================" << std::endl;
-    m_thread[0] = std::thread(&TCPServer::execute_communication, this);
+    
+    for (size_t i = 0; i < chanels_num; ++i)
+    {
+        m_thread[i] = std::thread(&TCPServer::execute_communication,
+                                this,
+                                m_socket[i],
+                                m_port[i],
+                                std::ref(m_address[i][0]));
+    }
+    
 }
                                                          
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -61,19 +71,15 @@ TCPServer::TCPServer():
 /*                                                          ~~~~~~~~~~~~~~~~~ */
 TCPServer::~TCPServer()
 {
-
-    m_thread[0].join();
-    // wait for all server communication threads to finish
-/*     for (auto &iterator : m_pp)
+    for (size_t i = 0; i < chanels_num; ++i)
     {
-        iterator.join();
-    } */
 
-    close(m_socket[SOCKET_FD]);
+        m_thread[i].join();
+        close((m_socket[i])[SOCKET_FD]);
+    }
+
     std::cout << "======================== dtor =================" << std::endl;
     m_raw_data.write_to_file(); 
-
-    m_epoll.~EPollWrapper(); // close epoll file descriptor 
 }
 
 /*============================================================================*/
@@ -82,17 +88,20 @@ TCPServer::~TCPServer()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                                                    communicate_with_client */
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::communicate_with_client()
-{    
+void TCPServer::communicate_with_client(int* communication_socket)
+{
+    //struct epoll_event* mepoll_events = new epoll_event[10];
+    
+    epoll_event epoll_events[chanels_num];
     std::string word;
 
     while(0 != m_buffer.compare("_end_of_file_"))
     {
-        int ready_file_descreptors = m_epoll.wait();
+        int ready_file_descreptors = m_epoll.wait(epoll_events);
 
         for (int i = 0; i < ready_file_descreptors; ++i)
         {
-            if (m_epoll[i].data.fd == m_socket[LISTEN_FD])
+            if (epoll_events[i].data.fd == communication_socket[LISTEN_FD])
             {
                 m_buffer.clear();
 
@@ -100,7 +109,7 @@ void TCPServer::communicate_with_client()
                 bzero(buffer, sizeof(buffer)); 
         
                 // read the message from client and copy it in buffer 
-                read(m_socket[LISTEN_FD], buffer, sizeof(buffer)); 
+                read(communication_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
                 m_buffer.assign(buffer);
                 m_raw_data.gate_way(m_buffer.c_str());
@@ -116,7 +125,7 @@ void TCPServer::communicate_with_client()
                 bzero(buffer, sizeof(buffer));
 
                 // and send that buffer to client 
-                write(m_socket[LISTEN_FD], "All good\n", 10); 
+                write(communication_socket[LISTEN_FD], "All good\n", 10); 
             } 
         }    
     }    
@@ -131,23 +140,25 @@ void TCPServer::communicate_with_client()
 /*============================================================================*/
 /*                                                           configure_socket */
 /*                                                           ~~~~~~~~~~~~~~~~ */
-void TCPServer::configure_socket()
+void TCPServer::configure_socket(int port_number,
+                                 int* communication_socket,
+                                 sockaddr_in* address)
 {
-    m_socket[SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
-    if (failed_to_create_socket == m_socket[SOCKET_FD])
+    communication_socket[SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
+    if (failed_to_create_socket == communication_socket[SOCKET_FD])
     {
         throw std::runtime_error("socket creation");
     } 
 
     // assign IP, PORT 
-    m_address[SERVER].sin_family = AF_INET; 
-    m_address[SERVER].sin_addr.s_addr = htonl(INADDR_ANY); 
-    m_address[SERVER].sin_port = htons(m_incoming_port_number[0]); 
+    address[SERVER].sin_family = AF_INET; 
+    address[SERVER].sin_addr.s_addr = htonl(INADDR_ANY); 
+    address[SERVER].sin_port = htons(port_number); 
   
     // Binding newly created socket to given IP
-    if (socket_bind_successfully != (bind(m_socket[SOCKET_FD],
-                                          (socket_address_t*)&m_address[SERVER],
-                                           sizeof(m_address[SERVER]))))
+    if (socket_bind_successfully != (bind(communication_socket[SOCKET_FD],
+                                          (socket_address_t*)&address[SERVER],
+                                           sizeof(address[SERVER]))))
     {
         throw std::runtime_error("socket bind"); 
     } 
@@ -156,35 +167,38 @@ void TCPServer::configure_socket()
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                            wait_for_client */
 /*                                                            ~~~~~~~~~~~~~~~ */
-void TCPServer::wait_for_client()
+void TCPServer::wait_for_client(int* communication_socket,
+                                sockaddr_in* address)
 {
     // Now server is ready to listen
-    if (ready_to_accept_connections != listen(m_socket[SOCKET_FD], 0))
+    if (ready_connections != listen(communication_socket[SOCKET_FD], 0))
     {
         throw std::runtime_error("Listen"); 
     }
 
-    socklen_t address_length = sizeof(m_address[CLIENT]); 
+    socklen_t address_length = sizeof(address[CLIENT]); 
   
     // Accept the data packet from client
-    m_socket[LISTEN_FD] = accept(m_socket[SOCKET_FD],
-                                        (socket_address_t*)&m_address[CLIENT],
+    communication_socket[LISTEN_FD] = accept(communication_socket[SOCKET_FD],
+                                        (socket_address_t*)&address[CLIENT],
                                         &address_length);
                                         
-    if (accept_unsuccessfully == m_socket[LISTEN_FD])
+    if (accept_unsuccessfully == communication_socket[LISTEN_FD])
     {
         throw std::runtime_error("server acccept");
     }
 
-    m_epoll.add(m_socket[LISTEN_FD]);
+    m_epoll.add(communication_socket[LISTEN_FD]);
 
-    communicate_with_client();
+    communicate_with_client(communication_socket);
 }
 
-void TCPServer::execute_communication()
+void TCPServer::execute_communication(int* communication_socket,
+                                      int port_number,
+                                      struct sockaddr_in& address)
 {
-    configure_socket();
-    wait_for_client();
+    configure_socket(port_number, communication_socket, &address);
+    wait_for_client(communication_socket, &address);
 }
 
 } // namespace med

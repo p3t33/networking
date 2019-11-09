@@ -30,5 +30,3 @@ sleep 5
 # run client 1 #
 ################
 ./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
-
-

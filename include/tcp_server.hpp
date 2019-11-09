@@ -40,8 +40,15 @@ class TCPServer
 
 private:
     using socket_address_t  = struct sockaddr;
-    enum Address {SERVER, CLIENT};
-    enum Descriptor {SOCKET_FD, LISTEN_FD}; 
+    enum address {SERVER, CLIENT};
+    enum file_descriptor {SOCKET_FD, LISTEN_FD};
+    enum incoming_port {TCP1 = 9090, TCP2 = 9091, TCP3 = 9092}; 
+
+    // chanels_num  is the number of communication chanels which is derived from 
+    // number of incoming ports, it will define the number of m_thread, m_socket
+    // and m_address
+    static const int chanels_num = 1;
+    static const bool epoll_multithread_flag = true;
 
 public:
     TCPServer();
@@ -52,29 +59,31 @@ public:
     TCPServer(const TCPServer&&) = delete;
     TCPServer& operator=(TCPServer&&) = delete;
 
-    // Interface / API
-    // ----------------------------------------------------------------
-
-    // ------------------------------------------------------------------
-
 private:
     // Auxilary ctor functions
     // ------------------------------------------------------------------
-    void configure_socket();
-    void wait_for_client();
-    void communicate_with_client();
-    void execute_communication();
-    // ------------------------------------------------------------------
+    void configure_socket(int port_number,
+                         int* communication_socket,
+                         sockaddr_in* address);
+    void wait_for_client(int* communication_socket, sockaddr_in* address);
+    void communicate_with_client(int* communication_socket);
+    void execute_communication(int* communication_socket,
+                               int port_number,
+                               sockaddr_in& address);
 
-    std::vector<std::string> m_file_data;
-    size_t m_incoming_port_number[3];
-    int m_socket[2];
-    struct sockaddr_in m_address[2];
+    // Managing variables 
+    // ------------------------------------------------------------------
+    // TCP socket pair, second socket initialized during accept function call
+    std::vector<int[2]> m_socket;
+    std::vector<sockaddr_in[2]> m_address; 
+    std::vector<std::thread> m_thread; // each thread handles different socket
+    std::vector<int> m_port;
+
+    std::vector<std::string> m_file_data; // stores incoming data from client
     std::string m_buffer;
 
-    DataProxy m_raw_data;
-    EPollWrapper m_epoll;
-    std::vector<std::thread> m_thread;
+    DataProxy m_raw_data; // handles incoming data from client/
+    EPollWrapper m_epoll; // server epoll
 };
 
 } // namespace med

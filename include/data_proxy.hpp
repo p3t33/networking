@@ -42,9 +42,10 @@ class DataProxy
         // ------------------------------------------------------------------
         void gate_way(const std::string& string);
         void write_to_file();
-        // ------------------------------------------------------------------
 
     private:
+        // managing variables 
+        // -----------------------------
         std::ofstream m_file;
         std::vector<std::string> m_data;
         std::string m_string;

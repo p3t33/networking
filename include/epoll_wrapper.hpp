@@ -21,9 +21,9 @@ namespace med
 class EPollWrapper
 {
 public:
-	EPollWrapper(int epoll_flags = 0,
-                 int max_event = 10,
-                 int event_flag = EPOLLIN);
+	EPollWrapper(bool multithread_flag = false ,
+                 int create_flag = 0,
+                 int max_event = 10);
 	~EPollWrapper();
 
     EPollWrapper(const EPollWrapper&) = delete;
@@ -31,15 +31,18 @@ public:
 
     // Interface / API
     // ------------------------------------------------------------------
-    void add(int file_descriptor_to_add, int events_flag = EPOLLIN);
+    void add(int file_descriptor_to_add,
+             uint32_t events_flag = (EPOLLET | EPOLLIN));
     void remove(int file_descriptor_to_remove);
-    int wait(int maxevents = 10, int time_out_ms = 5000);
+    int wait(epoll_event* epoll_events, int maxevents = 10, int time_out_ms = 5000);
     const epoll_event& operator[](const int index);
-    // ------------------------------------------------------------------
 
 private: 
+    // managing variables 
+    // -------------------------------------------------------------
     int m_epoll_fd;
     int m_max_event;
+    bool m_multithread_flag;
 
     // when epoll_wait returns it filles <m_epoll_events> array with 
     // epoll_event structs that are ready to be to read from.

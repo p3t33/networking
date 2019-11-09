@@ -9,7 +9,10 @@
 * Writer: Kobi Medrish       
 * Created: 5.11.19
 * Last update: 6.11.19
+
 *******************************************************************************/
+
+
 /*============================================================================*/
 /*                                  Definitions                               */
 /*============================================================================*/
@@ -42,7 +45,6 @@ public:
     // Interface / API
     // ------------------------------------------------------------------
     void communicate_with_server();
-    // ------------------------------------------------------------------
 
 private:
     using socket_address_t  = struct sockaddr;
@@ -51,8 +53,9 @@ private:
     // ------------------------------------------------------------------
     void configure_socket(size_t port, std::string& ip_address);
     void connect_to_server();
-    // ------------------------------------------------------------------
 
+    // managing variables 
+    // ----------------------------
     std::ifstream m_file; // read_only from file
     int m_socket_file_descriptor;
     struct sockaddr_in m_server_address;
