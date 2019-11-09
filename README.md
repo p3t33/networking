@@ -8,7 +8,8 @@ version will have 3 clients connecting simultaneously.
 ### Next on the Todo list
 - [x] <del> Integrate an epoll </del>
 - [x] <del> Integrate multi threaded communication execution in server</del>
-- [ ] Integrate multiple sockets in server 
+- [X] <del>Integrate multiple sockets in server.</del> 
+- [ ] add UDP communication. 
 
 ### Getting Started
 clone the project by typing in the command line:
