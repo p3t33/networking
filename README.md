@@ -9,7 +9,9 @@ version will have 3 clients connecting simultaneously.
 - [x] <del> Integrate an epoll </del>
 - [x] <del> Integrate multi threaded communication execution in server</del>
 - [X] <del>Integrate multiple sockets in server.</del> 
-- [ ] add UDP communication. 
+- [ ] implement udp client.
+- [ ] implement udp communication on the server. 
+
 
 ### Getting Started
 clone the project by typing in the command line:
