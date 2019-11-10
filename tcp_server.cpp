@@ -49,18 +49,27 @@ TCPServer::TCPServer():
                                       m_thread{chanels_num},
                                       m_port{TCP1, TCP2, TCP3},
                                       m_raw_data("server_output.txt"),
-                                      m_epoll(epoll_multithread_flag)
+                                      m_epoll(epoll_multithread_flag),
+                                      m_thread_data{3}
+                                   
 {
     std::cout << "=================== Server ====================" << std::endl;
     
     for (size_t i = 0; i < chanels_num; ++i)
     {
-        m_thread[i] = std::thread(&TCPServer::execute_communication,
+        // m_thread_data = new ThreadData(m_socket[i], m_port[i], m_address[i][0]);
+
+        m_thread_data[i] = std::make_shared<ThreadData>(m_socket[i], m_port[i], m_address[i][0]);
+
+         //std::make_shared<AVL<T>::AVL_node>(data);
+        //ThreadData new_data(m_socket[i], m_port[i], m_address[i][0]);
+
+         m_thread[i] = std::thread(&TCPServer::execute_communication,
                                 this,
                                 m_socket[i],
                                 m_port[i],
                                 std::ref(m_address[i][0]),
-                                i);
+                                std::ref(m_thread_data[i])); 
     }
 }
                                                          
@@ -86,7 +95,7 @@ TCPServer::~TCPServer()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                                                    communicate_with_client */
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::communicate_with_client(int* communication_socket)
+void TCPServer::communicate_with_client(int* communication_socket, std::shared_ptr<ThreadData> data)
 {
     // epoll is thread safe, but each thread should have its own epoll_event
     // ready list array or else undefined behavior may occur due to race
@@ -101,7 +110,7 @@ void TCPServer::communicate_with_client(int* communication_socket)
 
         for (int i = 0; i < ready_file_descreptors; ++i)
         {
-            if (epoll_events[i].data.fd == communication_socket[LISTEN_FD])
+            if (epoll_events[i].data.fd == data->m_communication_socket[LISTEN_FD])
             {
                 word.clear();
 
@@ -109,7 +118,7 @@ void TCPServer::communicate_with_client(int* communication_socket)
                 bzero(buffer, sizeof(buffer)); 
         
                 // read the message from client and copy it in buffer 
-                read(communication_socket[LISTEN_FD], buffer, sizeof(buffer)); 
+                read(data->m_communication_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
                 word.assign(buffer);
                 m_raw_data.gate_way(word.c_str());
@@ -120,7 +129,7 @@ void TCPServer::communicate_with_client(int* communication_socket)
                 bzero(buffer, sizeof(buffer));
 
                 // and send that buffer to client 
-                write(communication_socket[LISTEN_FD], "All good\n", 10); 
+                write(data->m_communication_socket[LISTEN_FD], "All good\n", 10); 
             } 
         }    
     }
@@ -134,10 +143,11 @@ void TCPServer::communicate_with_client(int* communication_socket)
 void TCPServer::configure_socket(int port_number,
                                  int* communication_socket,
                                  sockaddr_in* address,
-                                 int thread_num)
+                                 std::shared_ptr<ThreadData> data)
 {
-    m_socket[thread_num][SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
-    if (failed_to_create_socket == m_socket[thread_num][SOCKET_FD])
+ 
+    data->m_communication_socket[SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
+    if (failed_to_create_socket == data->m_communication_socket[SOCKET_FD])
     {
         throw std::runtime_error("socket creation");
     } 
@@ -148,7 +158,7 @@ void TCPServer::configure_socket(int port_number,
     address[SERVER].sin_port = htons(port_number); 
   
     // Binding newly created socket to given IP
-    if (socket_bind_successfully != (bind(m_socket[thread_num][SOCKET_FD],
+    if (socket_bind_successfully != (bind(data->m_communication_socket[SOCKET_FD],
                                           (socket_address_t*)&address[SERVER],
                                            sizeof(address[SERVER]))))
     {
@@ -160,10 +170,11 @@ void TCPServer::configure_socket(int port_number,
 /*                                                            wait_for_client */
 /*                                                            ~~~~~~~~~~~~~~~ */
 void TCPServer::wait_for_client(int* communication_socket,
-                                sockaddr_in* address)
+                                sockaddr_in* address,
+                                std::shared_ptr<ThreadData> data)
 {
     // Now server is ready to listen
-    if (ready_connections != listen(communication_socket[SOCKET_FD], 0))
+    if (ready_connections != listen(data->m_communication_socket[SOCKET_FD], 0))
     {
         throw std::runtime_error("Listen"); 
     }
@@ -171,27 +182,27 @@ void TCPServer::wait_for_client(int* communication_socket,
     socklen_t address_length = sizeof(address[CLIENT]); 
   
     // Accept the data packet from client
-    communication_socket[LISTEN_FD] = accept(communication_socket[SOCKET_FD],
+    data->m_communication_socket[LISTEN_FD] = accept(data->m_communication_socket[SOCKET_FD],
                                         (socket_address_t*)&address[CLIENT],
                                         &address_length);
                                         
-    if (accept_unsuccessfully == communication_socket[LISTEN_FD])
+    if (accept_unsuccessfully == data->m_communication_socket[LISTEN_FD])
     {
         throw std::runtime_error("server acccept");
     }
 
-    m_epoll.add(communication_socket[LISTEN_FD]);
+    m_epoll.add(data->m_communication_socket[LISTEN_FD]);
 
-    communicate_with_client(communication_socket);
+    communicate_with_client(communication_socket, data);
 }
 
 void TCPServer::execute_communication(int* communication_socket,
                                       int port_number,
                                       struct sockaddr_in& address,
-                                      int thread_num)
+                                      std::shared_ptr<ThreadData> data)
 {
-    configure_socket(port_number, communication_socket, &address, thread_num);
-    wait_for_client(communication_socket, &address);
+    configure_socket(port_number, communication_socket, &address, data);
+    wait_for_client(communication_socket, &address, data);
 }
 
 } // namespace med

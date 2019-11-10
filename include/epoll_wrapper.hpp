@@ -35,7 +35,9 @@ public:
              uint32_t events_flag = (EPOLLET | EPOLLIN));
     void remove(int file_descriptor_to_remove);
     // time_out_ms = -1 makes epoll block “forever”
-    int wait(epoll_event* epoll_events, int maxevents = 10, int time_out_ms = -1);
+    int wait(epoll_event* epoll_events,
+             int maxevents = 10,
+             int time_out_ms = -1);
     const epoll_event& operator[](const int index);
 
 private: 
@@ -49,6 +51,8 @@ private:
     // epoll_event structs that are ready to be to read from.
     //
     // pointer is used because number events determented in run time.
+    // if EPollWrapper is used with multithread_flag = true, no allocation
+    // will be made.
     struct epoll_event* m_epoll_events;
 };
 

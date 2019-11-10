@@ -22,9 +22,7 @@ git clone https://github.com/p3t33/networking.git
 ```
 
 ### Compiling and running the server and clients
-1. Unit test is available for parser.cpp, navigate to ./unit_testing folder and
-   run the following script(to compile a binary):
-In order to compile source code to binary and run the client and server: 
+In order to compile source code to binary and run the 3 clients and server: 
 ```
 ./compile_and_run.sh
 ```

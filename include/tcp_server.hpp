@@ -22,6 +22,7 @@
 #include <string> // std::string
 #include <fstream> // std::ofstream m_file
 #include <thread> // std::thread
+#include <memory> // std::shared_ptr
 
 /*============================================================================*/
 /*                                                          local directories */
@@ -49,6 +50,7 @@ private:
     // and m_address
     static const int chanels_num = 3;
     static const bool epoll_multithread_flag = true;
+    class ThreadData;
 
 public:
     TCPServer();
@@ -65,13 +67,16 @@ private:
     void configure_socket(int port_number,
                          int* communication_socket,
                          sockaddr_in* address,
-                         int thread_num);
-    void wait_for_client(int* communication_socket, sockaddr_in* address);
-    void communicate_with_client(int* communication_socket);
+                         std::shared_ptr<ThreadData> data);
+    void wait_for_client(int* communication_socket,
+                         sockaddr_in* address,
+                         std::shared_ptr<ThreadData> data);
+    void communicate_with_client(int* communication_socket,
+                                 std::shared_ptr<ThreadData> data);
     void execute_communication(int* communication_socket,
                                int port_number,
                                sockaddr_in& address,
-                               int thread_num);
+                               std::shared_ptr<ThreadData> data);
 
     // Managing variables 
     // ------------------------------------------------------------------
@@ -83,7 +88,27 @@ private:
 
     DataProxy m_raw_data; // handles incoming data from client/
     EPollWrapper m_epoll; // server epoll
+
+    std::vector<std::shared_ptr<ThreadData>> m_thread_data;
+
 };
 
+class TCPServer::ThreadData
+{
+    public:
+        ThreadData(int* communication_socket,
+                   int port_number,
+                   struct sockaddr_in& address):
+                   m_communication_socket(communication_socket),
+                   m_port_number(port_number),
+                   m_address(address)
+        {}
+    
+        int* m_communication_socket;
+        int m_port_number;
+        struct sockaddr_in& m_address;
+};
+
+                                      
 } // namespace med
 #endif // _TCP_SERVER_
