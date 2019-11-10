@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 9.11.19
+* Last update: 10.11.19
 *******************************************************************************/
 
 /*============================================================================*/
@@ -48,7 +48,6 @@ TCPServer::TCPServer():
                                       m_address{chanels_num},
                                       m_thread{chanels_num},
                                       m_port{TCP1, TCP2, TCP3},
-                                      m_file_data(0),
                                       m_raw_data("server_output.txt"),
                                       m_epoll(epoll_multithread_flag)
 {
@@ -63,7 +62,6 @@ TCPServer::TCPServer():
                                 std::ref(m_address[i][0]),
                                 i);
     }
-    
 }
                                                          
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

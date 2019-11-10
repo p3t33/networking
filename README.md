@@ -1,16 +1,18 @@
 # Networking
-This is an implementation of a client server communication over TCP.
+This is an implementation of a client server communication over TCP and UDP.
 client opens a file connects to a server and sends the content of the file to
 the server. Server opens another file and writes the received information into
-it. This is a beta version, as of now one client connects to the server, final
-version will have 3 clients connecting simultaneously.
+it. As of now server opens 3 ports, each with its own
+thread and receives and  communicate with 3 clients simultaneously.
+
+This is a beta version, final version will include UDP connectivity.
 
 ### Next on the Todo list
 - [x] <del> Integrate an epoll </del>
 - [x] <del> Integrate multi threaded communication execution in server</del>
-- [X] <del>Integrate multiple sockets in server.</del> 
-- [ ] implement udp client.
-- [ ] implement udp communication on the server. 
+- [X] <del> Integrate multiple sockets in server.</del> 
+- [ ] implement UDP client.
+- [ ] implement UDO communication on the server. 
 
 
 ### Getting Started
@@ -19,7 +21,7 @@ clone the project by typing in the command line:
 git clone https://github.com/p3t33/networking.git
 ```
 
-### Compiling and running the server and client
+### Compiling and running the server and clients
 1. Unit test is available for parser.cpp, navigate to ./unit_testing folder and
    run the following script(to compile a binary):
 In order to compile source code to binary and run the client and server: 
@@ -36,8 +38,9 @@ After server and client ended communication data sent to server can be found
 at ./server_output.txt
 
 ### Compilers and operating systems
-code was compiled with GNU g++ using std=c++11. It was tested on ubuntu 18.04 LTS.
-code was tested for memory leaks via valgrind 3.13.0
+* Development was done on ubuntu 18.04 LTS OS.
+* Source code was compiled with GNU g++ (v7.4), std=11.
+* Tested for memory leaks using Valgrind v3.13.0
 
 ### Authors
 

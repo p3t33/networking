@@ -8,7 +8,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 9.11.19
+* Last update: 10.11.19
 *******************************************************************************/
 
 
@@ -80,8 +80,6 @@ private:
     std::vector<sockaddr_in[2]> m_address; 
     std::vector<std::thread> m_thread; // each thread handles different socket
     std::vector<int> m_port;
-
-    std::vector<std::string> m_file_data; // stores incoming data from client
 
     DataProxy m_raw_data; // handles incoming data from client/
     EPollWrapper m_epoll; // server epoll
