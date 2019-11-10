@@ -32,7 +32,7 @@ to compile ony:
 ```
 unit testing for data_proxy.cpp is available at ./unit_test
 
-After server and client ended communication data sent to server can be found
+After server and client ends communication data sent to server can be found
 at ./server_output.txt
 
 ### Compilers and operating systems
