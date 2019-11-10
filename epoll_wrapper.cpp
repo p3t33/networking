@@ -115,7 +115,7 @@ int EPollWrapper::wait(epoll_event* epoll_events,
       m_epoll_events = new epoll_event[m_max_event];
 
       event_count = epoll_wait(m_epoll_fd,
-                               epoll_events,
+                               m_epoll_events,
                                maxevents,
                                time_out_ms);
    }

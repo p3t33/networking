@@ -47,7 +47,7 @@ private:
     // chanels_num  is the number of communication chanels which is derived from 
     // number of incoming ports, it will define the number of m_thread, m_socket
     // and m_address
-    static const int chanels_num = 1;
+    static const int chanels_num = 3;
     static const bool epoll_multithread_flag = true;
 
 public:
@@ -64,12 +64,14 @@ private:
     // ------------------------------------------------------------------
     void configure_socket(int port_number,
                          int* communication_socket,
-                         sockaddr_in* address);
+                         sockaddr_in* address,
+                         int thread_num);
     void wait_for_client(int* communication_socket, sockaddr_in* address);
     void communicate_with_client(int* communication_socket);
     void execute_communication(int* communication_socket,
                                int port_number,
-                               sockaddr_in& address);
+                               sockaddr_in& address,
+                               int thread_num);
 
     // Managing variables 
     // ------------------------------------------------------------------
@@ -80,7 +82,6 @@ private:
     std::vector<int> m_port;
 
     std::vector<std::string> m_file_data; // stores incoming data from client
-    std::string m_buffer;
 
     DataProxy m_raw_data; // handles incoming data from client/
     EPollWrapper m_epoll; // server epoll

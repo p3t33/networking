@@ -23,7 +23,7 @@ class EPollWrapper
 public:
 	EPollWrapper(bool multithread_flag = false ,
                  int create_flag = 0,
-                 int max_event = 10);
+                 int max_event = 20);
 	~EPollWrapper();
 
     EPollWrapper(const EPollWrapper&) = delete;

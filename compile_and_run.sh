@@ -7,16 +7,7 @@ rm server_output.txt
 # compile source code #
 ######################
 
-#client source
-g++ -std=c++11 -pedantic-errors -Wall -Wextra -g -o tcp_client.out \
-tcp_client.cpp \
-client.cpp 
-#server source
-g++ -std=c++11 -pedantic-errors -Wall -Wextra -g -pthread -o tcp_server.out \
-tcp_server.cpp \
-data_proxy.cpp \
-server.cpp \
-epoll_wrapper.cpp
+./compile.sh
 
 # open seconed terminal to run tcp_client.out #
 ###############################################
@@ -29,4 +20,8 @@ sleep 5
 
 # run client 1 #
 ################
-./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt ;exec bash"
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client.out 9091 127.0.0.1 ./client_text_files/text2.txt ;exec bash"
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client.out 9092 127.0.0.1 ./client_text_files/text3.txt ;exec bash"
+
+#./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt

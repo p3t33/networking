@@ -79,6 +79,7 @@ void TCPClient::communicate_with_server()
     char buffer[80]; 
     std::string word;
 
+    // traverse file
     while (m_file >> word)
     {
         write(m_socket_file_descriptor, word.c_str(), word.size());
@@ -110,7 +111,7 @@ void TCPClient::configure_socket(size_t port, std::string& ip_address)
     // assign address family, IP, PORT 
     m_server_address.sin_family = AF_INET; 
     m_server_address.sin_addr.s_addr = inet_addr(ip_address.c_str()); 
-    m_server_address.sin_port = htons(port);
+    m_server_address.sin_port = htons(port); // comunication port
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

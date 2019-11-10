@@ -49,7 +49,6 @@ TCPServer::TCPServer():
                                       m_thread{chanels_num},
                                       m_port{TCP1, TCP2, TCP3},
                                       m_file_data(0),
-                                      m_buffer(""),
                                       m_raw_data("server_output.txt"),
                                       m_epoll(epoll_multithread_flag)
 {
@@ -61,7 +60,8 @@ TCPServer::TCPServer():
                                 this,
                                 m_socket[i],
                                 m_port[i],
-                                std::ref(m_address[i][0]));
+                                std::ref(m_address[i][0]),
+                                i);
     }
     
 }
@@ -95,8 +95,9 @@ void TCPServer::communicate_with_client(int* communication_socket)
     // conditions
     epoll_event epoll_events[chanels_num];
     std::string word;
+    word.clear();
 
-    while(0 != m_buffer.compare("_end_of_file_"))
+    while(0 != word.compare("_end_of_file_"))
     {
         int ready_file_descreptors = m_epoll.wait(epoll_events);
 
@@ -104,7 +105,7 @@ void TCPServer::communicate_with_client(int* communication_socket)
         {
             if (epoll_events[i].data.fd == communication_socket[LISTEN_FD])
             {
-                m_buffer.clear();
+                word.clear();
 
                 char buffer[80]; 
                 bzero(buffer, sizeof(buffer)); 
@@ -112,16 +113,11 @@ void TCPServer::communicate_with_client(int* communication_socket)
                 // read the message from client and copy it in buffer 
                 read(communication_socket[LISTEN_FD], buffer, sizeof(buffer)); 
 
-                m_buffer.assign(buffer);
-                m_raw_data.gate_way(m_buffer.c_str());
-            
-                // m_file.write(m_buffer.c_str(), m_buffer.length());
+                word.assign(buffer);
+                m_raw_data.gate_way(word.c_str());
             
                 std::cout << "Received from client: "
-                          << m_buffer.c_str() << std::endl;
-
-                // save incoming word from server
-                m_file_data.push_back(m_buffer.c_str());
+                          << word.c_str() << std::endl;
 
                 bzero(buffer, sizeof(buffer));
 
@@ -129,7 +125,7 @@ void TCPServer::communicate_with_client(int* communication_socket)
                 write(communication_socket[LISTEN_FD], "All good\n", 10); 
             } 
         }    
-    }    
+    }
 }
 
 /*============================================================================*/
@@ -139,10 +135,11 @@ void TCPServer::communicate_with_client(int* communication_socket)
 /*                                                           ~~~~~~~~~~~~~~~~ */
 void TCPServer::configure_socket(int port_number,
                                  int* communication_socket,
-                                 sockaddr_in* address)
+                                 sockaddr_in* address,
+                                 int thread_num)
 {
-    communication_socket[SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
-    if (failed_to_create_socket == communication_socket[SOCKET_FD])
+    m_socket[thread_num][SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
+    if (failed_to_create_socket == m_socket[thread_num][SOCKET_FD])
     {
         throw std::runtime_error("socket creation");
     } 
@@ -153,7 +150,7 @@ void TCPServer::configure_socket(int port_number,
     address[SERVER].sin_port = htons(port_number); 
   
     // Binding newly created socket to given IP
-    if (socket_bind_successfully != (bind(communication_socket[SOCKET_FD],
+    if (socket_bind_successfully != (bind(m_socket[thread_num][SOCKET_FD],
                                           (socket_address_t*)&address[SERVER],
                                            sizeof(address[SERVER]))))
     {
@@ -192,9 +189,10 @@ void TCPServer::wait_for_client(int* communication_socket,
 
 void TCPServer::execute_communication(int* communication_socket,
                                       int port_number,
-                                      struct sockaddr_in& address)
+                                      struct sockaddr_in& address,
+                                      int thread_num)
 {
-    configure_socket(port_number, communication_socket, &address);
+    configure_socket(port_number, communication_socket, &address, thread_num);
     wait_for_client(communication_socket, &address);
 }
 

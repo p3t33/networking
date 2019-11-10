@@ -64,7 +64,7 @@ void DataProxy::write_to_file()
 
     for (auto iterator: m_data)
     {
-        m_file << std::flush;
+        //m_file << std::flush;
         m_file << iterator.c_str() << " ";
         m_file << std::endl;
     }
