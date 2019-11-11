@@ -193,14 +193,14 @@ void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
 {
     char buffer[80];
   
-    socklen_t address_length;
+    socklen_t address_length = sizeof(data->m_address[CLIENT]);
     char const *message = "pong";
     std::string word;
-    sockaddr_in test;
+    
 
 
 
-    while (1)
+    for (size_t i = 0; i < 5; ++ i)
     {
         sleep(1);
         int number_of_read_bytes; 
@@ -208,9 +208,8 @@ void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
                                         (char *)buffer,
                                         sizeof(buffer),  
                                         MSG_WAITALL,
-                                        ( struct sockaddr *) &test, 
+                                        ( struct sockaddr *) &data->m_address[CLIENT], 
                                         &address_length); 
-        std::cout << "passed recvfrom" << std::endl;
 
         buffer[number_of_read_bytes] = '\0'; 
         printf("Client : %s\n", buffer); 
@@ -218,10 +217,11 @@ void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
               (const char *)message,
               strlen(message),  
               MSG_CONFIRM,
-              (const struct sockaddr *) &test, 
+              (const struct sockaddr *) &data->m_address[CLIENT], 
               address_length); 
 
-        printf("Hello message sent.\n");  
+        printf("Hello message sent.\n"); 
+
     }  
 }
 
