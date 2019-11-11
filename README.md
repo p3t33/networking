@@ -35,6 +35,13 @@ unit testing for data_proxy.cpp is available at ./unit_test
 After server and client ends communication data sent to server can be found
 at ./server_output.txt
 
+In case you decide to run manually
+1. Run ./tcp_server.out which is preconfigured with tcp ports 9090, 9091, 9092.
+2. Now run the 3 clients (clients must be run with environment variables):
+    * ./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
+    * ./tcp_client.out 9091 127.0.0.1 ./client_text_files/text2.txt   
+    * ./tcp_client.out 9092 127.0.0.1 ./client_text_files/text3.txt
+     
 ### Compilers and operating systems
 * Development was done on ubuntu 18.04 LTS OS.
 * Source code was compiled with GNU g++ (v7.4), std=11.
