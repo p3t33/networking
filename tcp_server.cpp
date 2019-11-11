@@ -45,15 +45,18 @@ class TCPServer::ThreadData
     public:
         ThreadData(int* communication_socket,
                    int port_number,
-                   sockaddr_in* address):
+                   sockaddr_in* address,
+                   int socket_type):
                    m_communication_socket(communication_socket),
                    m_port_number(port_number),
-                   m_address(address)
+                   m_address(address),
+                   m_socket_type(socket_type)
         {}
     
         int* m_communication_socket;
         int m_port_number;
         struct sockaddr_in* m_address;
+        int m_socket_type;
 };
 
 
@@ -66,19 +69,18 @@ class TCPServer::ThreadData
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
 TCPServer::TCPServer():
-                                      m_socket{chanels_num},
-                                      m_address{chanels_num},
-                                      m_thread{chanels_num},
-                                      m_port{TCP1, TCP2, TCP3},
+                                      m_socket{total_chanles},
+                                      m_address{total_chanles},
+                                      m_thread{total_chanles},
+                                      m_port{TCP1, TCP2, TCP3, UDP1},
                                       m_raw_data("server_output.txt"),
                                       m_epoll(epoll_multithread_flag),
-                                      m_thread_data{3}
+                                      m_thread_data{total_chanles}
                                    
 {
     std::cout << "=================== Server ====================" << std::endl;
     
-    for (size_t i = 0; i < chanels_num; ++i)
-    {
+
         /*
          * There were 3 options to pass arguments to thread function
          * 1. Pass single i to each thread and then using [] get access to 
@@ -94,13 +96,28 @@ TCPServer::TCPServer():
          *    one pointer is used and in the future all changes are done inside
          *    the ThreadData struct.
          */
+    for (size_t i = 0; i < tcp_chanels_num; ++i)
+    {
         m_thread_data[i] = std::make_shared<ThreadData>(m_socket[i],
                                                         m_port[i],
-                                                        m_address[i]);
+                                                        m_address[i],
+                                                        SOCK_STREAM);
 
-         m_thread[i] = std::thread(&TCPServer::execute_communication,
+         m_thread[i] = std::thread(&TCPServer::execute_tcp_communication,
                                    this,
                                    std::ref(m_thread_data[i])); 
+    }
+
+    for (size_t i = tcp_chanels_num; i < total_chanles; ++i)
+    {
+        m_thread_data[i] = std::make_shared<ThreadData>(m_socket[i],
+                                                        m_port[i],
+                                                        m_address[i],
+                                                        SOCK_DGRAM);
+
+        m_thread[i] = std::thread(&TCPServer::execute_udp_communication,
+                                  this,
+                                  std::ref(m_thread_data[i]));     
     }
 }
                                                          
@@ -109,7 +126,7 @@ TCPServer::TCPServer():
 /*                                                          ~~~~~~~~~~~~~~~~~ */
 TCPServer::~TCPServer()
 {
-    for (size_t i = 0; i < chanels_num; ++i)
+    for (size_t i = 0; i < (total_chanles); ++i)
     {
 
         m_thread[i].join();
@@ -124,14 +141,14 @@ TCPServer::~TCPServer()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                               member functions                             */
 /*                               ~~~~~~~~~~~~~~~~                             */
-/*                                                    communicate_with_client */
-/*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::communicate_with_client(std::shared_ptr<ThreadData> data)
+/*                                                communicate_with_tcp_client */
+/*                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+void TCPServer::communicate_with_tcp_client(std::shared_ptr<ThreadData> data)
 {
     // epoll is thread safe, but each thread should have its own epoll_event
     // ready list array or else undefined behavior may occur due to race
     // conditions
-    epoll_event epoll_events[chanels_num];
+    epoll_event epoll_events[tcp_chanels_num];
     std::string word;
     word.clear();
 
@@ -167,6 +184,45 @@ void TCPServer::communicate_with_client(std::shared_ptr<ThreadData> data)
             } 
         }    
     }
+    // communication is over and file descriptor is no longer needes to be
+    //
+    m_epoll.remove(data->m_communication_socket[LISTEN_FD]);
+}
+
+void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
+{
+    char buffer[80];
+  
+    socklen_t address_length;
+    char const *message = "pong";
+    std::string word;
+    sockaddr_in test;
+
+
+
+    while (1)
+    {
+        sleep(1);
+        int number_of_read_bytes; 
+        number_of_read_bytes = recvfrom(data->m_communication_socket[SOCKET_FD],
+                                        (char *)buffer,
+                                        sizeof(buffer),  
+                                        MSG_WAITALL,
+                                        ( struct sockaddr *) &test, 
+                                        &address_length); 
+        std::cout << "passed recvfrom" << std::endl;
+
+        buffer[number_of_read_bytes] = '\0'; 
+        printf("Client : %s\n", buffer); 
+        sendto(data->m_communication_socket[SOCKET_FD],
+              (const char *)message,
+              strlen(message),  
+              MSG_CONFIRM,
+              (const struct sockaddr *) &test, 
+              address_length); 
+
+        printf("Hello message sent.\n");  
+    }  
 }
 
 /*============================================================================*/
@@ -176,18 +232,19 @@ void TCPServer::communicate_with_client(std::shared_ptr<ThreadData> data)
 /*                                                           ~~~~~~~~~~~~~~~~ */
 void TCPServer::configure_socket(std::shared_ptr<ThreadData> data)
 {
- 
-    data->m_communication_socket[SOCKET_FD] = socket(AF_INET, SOCK_STREAM, 0); 
+    data->m_communication_socket[SOCKET_FD] = socket(AF_INET,
+                                                     data->m_socket_type,
+                                                     0); 
     if (failed_to_create_socket == data->m_communication_socket[SOCKET_FD])
     {
         throw std::runtime_error("socket creation");
     } 
 
     // assign IP, PORT 
-    data.get()->m_address[SERVER].sin_family = AF_INET; 
+    data->m_address[SERVER].sin_family = AF_INET; 
     data->m_address[SERVER].sin_addr.s_addr = htonl(INADDR_ANY); 
     data->m_address[SERVER].sin_port = htons(data->m_port_number); 
-  
+
     // Binding newly created socket to given IP
     if (socket_bind_successfully != 
                                   (bind(data->m_communication_socket[SOCKET_FD],
@@ -223,14 +280,25 @@ void TCPServer::wait_for_client(std::shared_ptr<ThreadData> data)
     }
 
     m_epoll.add(data->m_communication_socket[LISTEN_FD]);
-
-    communicate_with_client(data);
 }
 
-void TCPServer::execute_communication(std::shared_ptr<ThreadData> data)
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                  execute_tcp_communication */
+/*                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+void TCPServer::execute_tcp_communication(std::shared_ptr<ThreadData> data)
 {
     configure_socket(data);
     wait_for_client(data);
+    communicate_with_tcp_client(data);
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*                                                  execute_udp_communication */
+/*                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+void TCPServer::execute_udp_communication(std::shared_ptr<ThreadData> data)
+{
+    configure_socket(data);
+    communicate_with_udp_client(data);    
 }
 
 

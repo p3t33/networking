@@ -8,11 +8,12 @@ thread and receives and  communicate with 3 clients simultaneously.
 This is a beta version, final version will include UDP connectivity.
 
 ### Next on the Todo list
-- [x] <del> Integrate an epoll </del>
+- [x] <del> Integrate an epoll for server side TCP communication </del>
 - [x] <del> Integrate multi threaded communication execution in server</del>
 - [X] <del> Integrate multiple sockets in server.</del> 
+- [ ] implement UDP communication on the server.
 - [ ] implement UDP client.
-- [ ] implement UDO communication on the server. 
+ 
 
 
 ### Getting Started

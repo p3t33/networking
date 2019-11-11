@@ -8,7 +8,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 10.11.19
+* Last update: 11.11.19
 *******************************************************************************/
 
 
@@ -43,12 +43,14 @@ private:
     using socket_address_t  = struct sockaddr;
     enum address {SERVER, CLIENT};
     enum file_descriptor {SOCKET_FD, LISTEN_FD};
-    enum incoming_port {TCP1 = 9090, TCP2 = 9091, TCP3 = 9092}; 
+    enum incoming_port {TCP1 = 9090, TCP2 = 9091, TCP3 = 9092, UDP1 = 8080}; 
 
     // chanels_num  is the number of communication chanels which is derived from 
     // number of incoming ports, it will define the number of m_thread, m_socket
     // and m_address
-    static const int chanels_num = 3;
+    static const int tcp_chanels_num = 3; // 3 tcp sockets and 1 udp socket
+    static const int udp_chanels_num = 1;
+    static const int total_chanles = tcp_chanels_num + udp_chanels_num;
     static const bool epoll_multithread_flag = true;
     class ThreadData; // auxiliary class used to pass data in a threadsafe
                       // manner to the thread function
@@ -67,8 +69,10 @@ private:
     // ------------------------------------------------------------------
     void configure_socket(std::shared_ptr<ThreadData> data);
     void wait_for_client(std::shared_ptr<ThreadData> data);
-    void communicate_with_client(std::shared_ptr<ThreadData> data);
-    void execute_communication(std::shared_ptr<ThreadData> data);
+    void communicate_with_tcp_client(std::shared_ptr<ThreadData> data);
+    void communicate_with_udp_client(std::shared_ptr<ThreadData> data);
+    void execute_tcp_communication(std::shared_ptr<ThreadData> data);
+    void execute_udp_communication(std::shared_ptr<ThreadData> data);
 
     // Managing variables 
     // ------------------------------------------------------------------
