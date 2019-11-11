@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 10.11.19
+* Last update: 11.11.19
 *******************************************************************************/
 
 /*============================================================================*/
@@ -28,7 +28,6 @@
 static const int failed_to_create_socket = -1;
 static const int socket_bind_successfully = 0;
 static const int ready_connections = 0;
-static const int indefinitely = 1;
 static const int accept_unsuccessfully = -1;
 
 /*============================================================================*/
@@ -41,7 +40,7 @@ namespace med
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                               special functions                            */
 /*                               ~~~~~~~~~~~~~~~~~                            */
-struct TCPServer::ThreadData
+class TCPServer::ThreadData
 {
     public:
         ThreadData(int* communication_socket,

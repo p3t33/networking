@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 6.11.19
+* Last update: 11.11.19
 *******************************************************************************/
 
 #include <iostream>
@@ -17,8 +17,9 @@ int main(int argc, char const *argv[])
 {
     if (1 == argc)
     {
-        std::cout<<"please provide an a port number: ";
-        std::cout<<"client.out <number of port>" <<std::endl;
+        std::cout<<"please provide a port number,"
+                 <<"server address and file to open: "
+                 <<"./client.out <port> <address> <file>" <<std::endl;
     
         return (0);
     }

@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 6.11.19
+* Last update: 11.11.19
 *******************************************************************************/
 
 
@@ -29,7 +29,6 @@
 /*                                                           ~~~~~~~~~~~~~~~~ */
 static const int failed_to_create_socket = -1;
 static const int connected_successfully = 0;
-static const size_t indefinitely = 1;
 
 /*============================================================================*/
 namespace med

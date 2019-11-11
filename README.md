@@ -44,7 +44,7 @@ In case you decide to run manually
      
 ### Compilers and operating systems
 * Development was done on ubuntu 18.04 LTS OS.
-* Source code was compiled with GNU g++ (v7.4), std=11.
+* Source code was compiled with GNU g++ v7.4 and clang++ v6.0.0, std=11
 * Tested for memory leaks using Valgrind v3.13.0
 
 ### Authors
