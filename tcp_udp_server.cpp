@@ -21,7 +21,7 @@
 /*============================================================================*/
 /*                                                          local directories */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
-#include "./include/tcp_server.hpp"
+#include "./include/tcp_udp_server.hpp"
 /*============================================================================*/
 /*                                                           global variables */
 /*                                                           ~~~~~~~~~~~~~~~~ */
@@ -40,7 +40,7 @@ namespace med
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                               special functions                            */
 /*                               ~~~~~~~~~~~~~~~~~                            */
-class TCPServer::ThreadData
+class TCPUDPServer::ThreadData
 {
     public:
         ThreadData(int* communication_socket,
@@ -61,14 +61,14 @@ class TCPServer::ThreadData
 
 
 /*============================================================================*/
-/*                                Class TCPServer                             */
+/*                                Class TCPUDPServer                             */
 /*============================================================================*/
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                               special functions                            */
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-TCPServer::TCPServer():
+TCPUDPServer::TCPUDPServer():
                                       m_socket{total_chanles},
                                       m_address{total_chanles},
                                       m_thread{total_chanles},
@@ -103,7 +103,7 @@ TCPServer::TCPServer():
                                                         m_address[i],
                                                         SOCK_STREAM);
 
-         m_thread[i] = std::thread(&TCPServer::execute_tcp_communication,
+         m_thread[i] = std::thread(&TCPUDPServer::execute_tcp_communication,
                                    this,
                                    std::ref(m_thread_data[i])); 
     }
@@ -115,7 +115,7 @@ TCPServer::TCPServer():
                                                         m_address[i],
                                                         SOCK_DGRAM);
 
-        m_thread[i] = std::thread(&TCPServer::execute_udp_communication,
+        m_thread[i] = std::thread(&TCPUDPServer::execute_udp_communication,
                                   this,
                                   std::ref(m_thread_data[i]));     
     }
@@ -124,7 +124,7 @@ TCPServer::TCPServer():
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                          Destructor / dtor */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
-TCPServer::~TCPServer()
+TCPUDPServer::~TCPUDPServer()
 {
     for (size_t i = 0; i < (total_chanles); ++i)
     {
@@ -143,7 +143,7 @@ TCPServer::~TCPServer()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                                                communicate_with_tcp_client */
 /*                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::communicate_with_tcp_client(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::communicate_with_tcp_client(std::shared_ptr<ThreadData> data)
 {
     // epoll is thread safe, but each thread should have its own epoll_event
     // ready list array or else undefined behavior may occur due to race
@@ -184,12 +184,12 @@ void TCPServer::communicate_with_tcp_client(std::shared_ptr<ThreadData> data)
             } 
         }    
     }
-    // communication is over and file descriptor is no longer needes to be
-    //
+    // Communication is over and file descriptor is no longer required to be
+    // monitored by epoll.
     m_epoll.remove(data->m_communication_socket[LISTEN_FD]);
 }
 
-void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
 {
     char buffer[80];
   
@@ -197,31 +197,27 @@ void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
     char const *message = "pong";
     std::string word;
     
-
-
-
+    //TODO: investigate cast
     for (size_t i = 0; i < 5; ++ i)
     {
         sleep(1);
-        int number_of_read_bytes; 
-        number_of_read_bytes = recvfrom(data->m_communication_socket[SOCKET_FD],
-                                        (char *)buffer,
-                                        sizeof(buffer),  
-                                        MSG_WAITALL,
-                                        ( struct sockaddr *) &data->m_address[CLIENT], 
-                                        &address_length); 
+        // no need to use an epoll, recvfrom will do the blocking.
+        recvfrom(data->m_communication_socket[SOCKET_FD],
+                static_cast<char *>(buffer),
+                 sizeof(buffer),  
+                 MSG_WAITALL,
+                 reinterpret_cast<sockaddr*>(&data->m_address[CLIENT]), 
+                 &address_length); 
 
-        buffer[number_of_read_bytes] = '\0'; 
-        printf("Client : %s\n", buffer); 
+        word.assign(buffer);
+        std::cout << "Received from client: " << word << std::endl;
+
         sendto(data->m_communication_socket[SOCKET_FD],
-              (const char *)message,
-              strlen(message),  
-              MSG_CONFIRM,
-              (const struct sockaddr *) &data->m_address[CLIENT], 
-              address_length); 
-
-        printf("Hello message sent.\n"); 
-
+               reinterpret_cast<const char *>(message),
+               strlen(message),  
+               MSG_CONFIRM,
+               reinterpret_cast<sockaddr*>(&data->m_address[CLIENT]), 
+               address_length); 
     }  
 }
 
@@ -230,7 +226,7 @@ void TCPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
 /*============================================================================*/
 /*                                                           configure_socket */
 /*                                                           ~~~~~~~~~~~~~~~~ */
-void TCPServer::configure_socket(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::configure_socket(std::shared_ptr<ThreadData> data)
 {
     data->m_communication_socket[SOCKET_FD] = socket(AF_INET,
                                                      data->m_socket_type,
@@ -258,7 +254,7 @@ void TCPServer::configure_socket(std::shared_ptr<ThreadData> data)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                            wait_for_client */
 /*                                                            ~~~~~~~~~~~~~~~ */
-void TCPServer::wait_for_client(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::wait_for_client(std::shared_ptr<ThreadData> data)
 {
     // Now server is ready to listen
     if (ready_connections != listen(data->m_communication_socket[SOCKET_FD], 0))
@@ -285,7 +281,7 @@ void TCPServer::wait_for_client(std::shared_ptr<ThreadData> data)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                  execute_tcp_communication */
 /*                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::execute_tcp_communication(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::execute_tcp_communication(std::shared_ptr<ThreadData> data)
 {
     configure_socket(data);
     wait_for_client(data);
@@ -295,7 +291,7 @@ void TCPServer::execute_tcp_communication(std::shared_ptr<ThreadData> data)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                  execute_udp_communication */
 /*                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPServer::execute_udp_communication(std::shared_ptr<ThreadData> data)
+void TCPUDPServer::execute_udp_communication(std::shared_ptr<ThreadData> data)
 {
     configure_socket(data);
     communicate_with_udp_client(data);    

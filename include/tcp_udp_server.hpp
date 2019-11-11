@@ -36,7 +36,7 @@
 namespace med
 {
 
-class TCPServer
+class TCPUDPServer
 {
 
 private:
@@ -56,13 +56,13 @@ private:
                       // manner to the thread function
 
 public:
-    TCPServer();
-    ~TCPServer();
+    TCPUDPServer();
+    ~TCPUDPServer();
 
-    TCPServer(const TCPServer&) = delete;
-    TCPServer& operator=(TCPServer&) = delete;
-    TCPServer(const TCPServer&&) = delete;
-    TCPServer& operator=(TCPServer&&) = delete;
+    TCPUDPServer(const TCPUDPServer&) = delete;
+    TCPUDPServer& operator=(TCPUDPServer&) = delete;
+    TCPUDPServer(const TCPUDPServer&&) = delete;
+    TCPUDPServer& operator=(TCPUDPServer&&) = delete;
 
 private:
     // Auxilary ctor functions

@@ -1,4 +1,4 @@
-# Networking
+# TCP / UDP server - client
 This is an implementation of a client server communication over TCP and UDP.
 client opens a file connects to a server and sends the content of the file to
 the server. Server opens another file and writes the received information into
@@ -9,9 +9,9 @@ This is a beta version, final version will include UDP connectivity.
 
 ### Next on the Todo list
 - [x] <del> Integrate an epoll for server side TCP communication </del>
-- [x] <del> Integrate multi threaded communication execution in server</del>
-- [X] <del> Integrate multiple sockets in server.</del> 
-- [ ] implement UDP communication on the server.
+- [x] <del> Integrate multi threaded communication execution on server</del>
+- [X] <del> Integrate multiple sockets on server.</del> 
+- [X] <del> Implement UDP communication on the server.</del>
 - [ ] implement UDP client.
  
 
@@ -36,8 +36,8 @@ unit testing for data_proxy.cpp is available at ./unit_test
 After server and client ends communication data sent to server can be found
 at ./server_output.txt
 
-In case you decide to run manually
-1. Run ./tcp_server.out which is preconfigured with tcp ports 9090, 9091, 9092.
+In case you decide to run manually (after ./compile.sh is done):
+1. Run ./server.out which is preconfigured with tcp ports 9090, 9091, 9092.
 2. Now run the 3 clients (clients must be run with environment variables):
     * ./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
     * ./tcp_client.out 9091 127.0.0.1 ./client_text_files/text2.txt   
