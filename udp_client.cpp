@@ -1,11 +1,11 @@
 /*******************************************************************************
-*                           tcp client
+*                           udp client
 *                       =====================
-* File Name: tcp_client.cpp
-* Related files: tcp_client.hpp tcp_client_test.cpp
+* File Name: udp_client.cpp
+* Related files: udp_client.hpp udp_client_test.cpp
 * #Version: V 1.0
 * Writer: Kobi Medrish       
-* Created: 5.11.19
+* Created: 12.11.19
 * Last update: 12.11.19
 *******************************************************************************/
 
@@ -22,7 +22,7 @@
 /*============================================================================*/
 /*                                                          local directories */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
-#include "./include/tcp_client.hpp"
+#include "./include/udp_client.hpp"
 
 /*============================================================================*/
 /*                                                           global variables */
@@ -35,14 +35,14 @@ namespace med
 {
     
 /*============================================================================*/
-/*                                Class TCPClient                             */
+/*                                Class UDPClient                             */
 /*============================================================================*/
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                               special functions                            */
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-TCPClient::TCPClient(std::string port,
+UDPClient::UDPClient(std::string port,
                      std::string ip_address,
                      std::string file_name):
                                                 m_file(),
@@ -55,13 +55,12 @@ TCPClient::TCPClient(std::string port,
     m_file.open(file_name, std::ios::binary);
     std::string::size_type sizet;   // alias of size_t
     configure_socket(std::stoi (port ,&sizet), ip_address);
-    connect_to_server();
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                          Destructor / dtor */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
-TCPClient::~TCPClient()
+UDPClient::~UDPClient()
 {
     close(m_socket_file_descriptor);
     m_file.close();
@@ -73,24 +72,30 @@ TCPClient::~TCPClient()
 /*                               ~~~~~~~~~~~~~~~~                             */
 /*                                                    communicate_with_server */
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
-void TCPClient::communicate_with_server()
+void UDPClient::communicate_with_server()
 {
-    char buffer[80]; 
+    char buffer[80] = {0};
     std::string word;
+    char const *message = "ping"; 
+    socklen_t address_length = sizeof(m_server_address);
 
-    // traverse file
-    while (m_file >> word)
+    for (size_t i = 0; i < 5; ++ i)
     {
-        write(m_socket_file_descriptor, word.c_str(), word.size());
-
-        read(m_socket_file_descriptor, buffer, sizeof(buffer));
-
-        m_buffer.assign(buffer);
-
-        std::cout << "Received from server: " << m_buffer.c_str();
-    }
-
-    write(m_socket_file_descriptor, "_end_of_file_" ,13);
+        sleep(1);
+        sendto(m_socket_file_descriptor, (const char *)message, strlen(message), 
+        MSG_CONFIRM, (const struct sockaddr *) &m_server_address, sizeof(m_server_address));  
+                                
+        ssize_t number_of_read_bytes = recvfrom(m_socket_file_descriptor,
+                                                (char *)buffer,
+                                                sizeof(buffer),  
+                                                MSG_WAITALL,
+                                                (struct sockaddr *) &m_server_address, 
+                                                &address_length); 
+        buffer[number_of_read_bytes] = '\0'; 
+        printf("Server : %s\n", buffer); 
+  
+    }    
+   // write(m_socket_file_descriptor, "_end_of_file_" ,13);
 }
 
 /*============================================================================*/
@@ -98,10 +103,11 @@ void TCPClient::communicate_with_server()
 /*============================================================================*/
 /*                                                           configure_socket */
 /*                                                           ~~~~~~~~~~~~~~~~ */
-void TCPClient::configure_socket(size_t port, std::string& ip_address)
+void UDPClient::configure_socket(size_t port, std::string& ip_address)
 {
+    // TODO: socket(AF_INET, SOCK_DGRAM, 0)) < 0
     // create socket
-    m_socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0); 
+    m_socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, 0); 
     if (failed_to_create_socket == m_socket_file_descriptor)
     {
         throw std::runtime_error("socket creation");
@@ -109,21 +115,12 @@ void TCPClient::configure_socket(size_t port, std::string& ip_address)
   
     // assign address family, IP, PORT 
     m_server_address.sin_family = AF_INET; 
-    m_server_address.sin_addr.s_addr = inet_addr(ip_address.c_str()); 
-    m_server_address.sin_port = htons(port); // comunication port
+    m_server_address.sin_addr.s_addr = INADDR_ANY; 
+    m_server_address.sin_port = htons(8080); // comunication port
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                                                          connect_to_server */
 /*                                                          ~~~~~~~~~~~~~~~~~ */
-void TCPClient::connect_to_server()
-{
-    if (connected_successfully != connect(m_socket_file_descriptor,
-                                          (socket_address_t*)&m_server_address,
-                                           sizeof(m_server_address)))
-    {
-        throw std::runtime_error("connection with the server"); 
-    }
-}
 
 } // namespace med

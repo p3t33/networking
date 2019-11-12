@@ -18,10 +18,13 @@ gnome-terminal --working-directory=${PWD} -- bash -c "./server.out ;exec bash"
 ###################################
 sleep 5
 
-# run client 1 #
-################
-gnome-terminal --working-directory=${PWD} -- bash -c "./client.out 9090 127.0.0.1 ./client_text_files/text1.txt ;exec bash"
-gnome-terminal --working-directory=${PWD} -- bash -c "./client.out 9091 127.0.0.1 ./client_text_files/text2.txt ;exec bash"
-gnome-terminal --working-directory=${PWD} -- bash -c "./client.out 9092 127.0.0.1 ./client_text_files/text3.txt ;exec bash"
+# run 1 UDP client #
+####################
+gnome-terminal --working-directory=${PWD} -- bash -c "./udp_client_test.out ;exec bash"
 
-#./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
+sleep 1
+# run client 3 TCP clients #
+############################
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client_test.out 9090 127.0.0.1 ./client_text_files/text1.txt ;exec bash"
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client_test.out 9091 127.0.0.1 ./client_text_files/text2.txt ;exec bash"
+gnome-terminal --working-directory=${PWD} -- bash -c "./tcp_client_test.out 9092 127.0.0.1 ./client_text_files/text3.txt ;exec bash"

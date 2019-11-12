@@ -1,12 +1,12 @@
 /****************************************************************
 *                              client
 *                       =====================
-* File Name: client.cpp  
+* File Name: tcp_client_test.cpp  
 * Related files: tcp_client.cpp tcp_client.hpp
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 11.11.19
+* Last update: 12.11.19
 *******************************************************************************/
 
 #include <iostream>

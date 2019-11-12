@@ -14,10 +14,9 @@ This is a beta version.
 - [x] <del> Integrate an epoll for server side TCP communication </del>
 - [x] <del> Integrate multi threaded communication execution on server</del>
 - [X] <del> Integrate multiple sockets on server.</del> 
-- [X] <del> Implement UDP communication on the server.</del>
-- [ ] implement UDP client.
+- [X] <del> Implement UDP communication socket on the server.</del>
+- [X] <del> Implement UDP client.</del>
  
-
 
 ### Getting Started
 clone the project by typing in the command line:
@@ -41,12 +40,18 @@ at ./server_output.txt
 
 In case you decide to run manually (after ./compile.sh is done):
 1. Run ./server.out which is preconfigured with tcp ports 9090, 9091, 9092.
-2. Now run the 3 clients (clients must be run with environment variables):
+2. Run the 1 UDP client:
 ```bash
-./tcp_client.out 9090 127.0.0.1 ./client_text_files/text1.txt
-./tcp_client.out 9091 127.0.0.1 ./client_text_files/text2.txt   
-./tcp_client.out 9092 127.0.0.1 ./client_text_files/text3.txt
-```     
+./udp_client_test.out
+``` 
+3. Now run the 3 tcp clients (clients must be run with environment variables):
+```bash
+./tcp_client_test.out 9090 127.0.0.1 ./client_text_files/text1.txt
+./tcp_client_test.out 9091 127.0.0.1 ./client_text_files/text2.txt   
+./tcp_client_test.out 9092 127.0.0.1 ./client_text_files/text3.txt
+``` 
+*The order of 2. and 3. has no significant.
+
 ### Compilers and operating systems
 * Development was done on ubuntu 18.04 LTS OS.
 * Source code was compiled with GNU g++ v7.4 and clang++ v6.0.0, std=11
