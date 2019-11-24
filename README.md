@@ -8,7 +8,6 @@ communicate with all of the clients simultaneously. The amount of sockets and
 their communication type is configurable. 
 
 As of now, server configured for 3 TCP ports and 1 UDP port communication.
-This is a beta version.
 
 ### Next on the Todo list
 - [x] <del> Integrate an epoll for server side TCP communication </del>
@@ -16,7 +15,13 @@ This is a beta version.
 - [X] <del> Integrate multiple sockets on server.</del> 
 - [X] <del> Implement UDP communication socket on the server.</del>
 - [X] <del> Implement UDP client.</del>
- 
+- [ ] To add UML diagram.
+- [ ] Add a logger.
+    - [ ] Server.
+    - [ ] TCP client.
+    - [ ] UDP client.
+
+
 
 ### Getting Started
 clone the project by typing in the command line:
