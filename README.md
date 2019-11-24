@@ -1,13 +1,15 @@
 # TCP / UDP server - client
 This is an implementation of a client server communication over TCP and UDP.
-TCP client opens a file, connects to the server and sends the content of the
-file to it. Server opens another file and writes the received information into
-it. UDP client sends a "ping" to the server and once server receives it, server
-sends a "pong" to the client. Each socket handled by its own thread and server 
-communicate with all of the clients simultaneously. The amount of sockets and
-their communication type is configurable. 
+A logger is integrated to log server activities. TCP client opens a file, 
+connects to the server and sends the content of the file to it. Server opens
+another file and writes the received information into it. UDP client sends a
+"ping" to the server and once server receives it, server sends a "pong" to the
+client. Each socket handled by its own thread and server communicate with all of
+the clients simultaneously. The amount of sockets and their communication type
+is configurable. 
 
 As of now, server configured for 3 TCP ports and 1 UDP port communication.
+
 
 ### Next on the Todo list
 - [x] <del> Integrate an epoll for server side TCP communication </del>
@@ -15,12 +17,8 @@ As of now, server configured for 3 TCP ports and 1 UDP port communication.
 - [X] <del> Integrate multiple sockets on server.</del> 
 - [X] <del> Implement UDP communication socket on the server.</del>
 - [X] <del> Implement UDP client.</del>
+- [X] <del> Add a logger to the server.</del>
 - [ ] To add UML diagram.
-- [ ] Add a logger.
-    - [ ] Server.
-    - [ ] TCP client.
-    - [ ] UDP client.
-
 
 
 ### Getting Started

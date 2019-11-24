@@ -46,7 +46,7 @@ class DataProxy
     private:
         // managing variables 
         // -----------------------------
-        std::ofstream m_file;
+        std::ofstream m_file; // write only mode
         std::vector<std::string> m_data;
         std::string m_string;
 };

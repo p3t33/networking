@@ -68,17 +68,20 @@ class TCPUDPServer::ThreadData
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-TCPUDPServer::TCPUDPServer():
+TCPUDPServer::TCPUDPServer(std::string server_output_file_name, 
+                           std::string log_file_name):
                                       m_socket{total_chanles},
                                       m_address{total_chanles},
                                       m_thread{total_chanles},
                                       m_port{TCP1, TCP2, TCP3, UDP1},
-                                      m_raw_data("server_output.txt"),
+                                      m_raw_data(server_output_file_name),
                                       m_epoll(epoll_multithread_flag),
-                                      m_thread_data{total_chanles}
+                                      m_thread_data{total_chanles},
+                                      m_logger(log_file_name)
                                    
 {
     std::cout << "=================== Server ====================" << std::endl;
+    m_logger.write_to_log(__FILE__, "Server received configurations", __LINE__);
     
 
         /*
@@ -133,8 +136,12 @@ TCPUDPServer::~TCPUDPServer()
         close((m_socket[i])[SOCKET_FD]);
     }
 
+    m_logger.write_to_log(__FILE__, "all sockets are closed", __LINE__);
+
     std::cout << "======================== dtor =================" << std::endl;
     m_raw_data.write_to_file(); 
+
+    m_logger.write_to_log(__FILE__, "server output file is ready", __LINE__);
 }
 
 /*============================================================================*/
@@ -233,8 +240,10 @@ void TCPUDPServer::configure_socket(std::shared_ptr<ThreadData> data)
                                                      0); 
     if (failed_to_create_socket == data->m_communication_socket[SOCKET_FD])
     {
-        throw std::runtime_error("socket creation");
-    } 
+        throw std::runtime_error("socket creation failed");
+    }
+
+    m_logger.write_to_log(__FILE__, "socket creation succeeded", __LINE__);
 
     // assign IP, PORT 
     data->m_address[SERVER].sin_family = AF_INET; 
@@ -247,8 +256,10 @@ void TCPUDPServer::configure_socket(std::shared_ptr<ThreadData> data)
                                   (socket_address_t*)&data->m_address[SERVER],
                                    sizeof(data->m_address[SERVER]))))
     {
-        throw std::runtime_error("socket bind"); 
+        throw std::runtime_error("socket bind failed"); 
     } 
+
+    m_logger.write_to_log(__FILE__, "socket bind succeeded", __LINE__);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

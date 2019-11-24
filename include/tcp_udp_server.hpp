@@ -29,6 +29,7 @@
 /*                                                          ~~~~~~~~~~~~~~~~~ */
 #include "data_proxy.hpp"
 #include "epoll_wrapper.hpp"
+#include "logger.hpp"
 
 /*============================================================================*/
 
@@ -56,7 +57,8 @@ private:
                       // manner to the thread function
 
 public:
-    TCPUDPServer();
+    TCPUDPServer(std::string server_output_file_name = "server_output.txt",
+                 std::string log_file_name = "server_log.txt");
     ~TCPUDPServer();
 
     TCPUDPServer(const TCPUDPServer&) = delete;
@@ -84,7 +86,8 @@ private:
 
     DataProxy m_raw_data; // handles incoming data from client/
     EPollWrapper m_epoll; // server epoll
-    std::vector<std::shared_ptr<ThreadData>> m_thread_data;                                            
+    std::vector<std::shared_ptr<ThreadData>> m_thread_data; // socket thread
+    Logger m_logger;
 };
 
                              

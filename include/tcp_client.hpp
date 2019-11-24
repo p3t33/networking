@@ -8,7 +8,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 11.11.19
+* Last update: 24.11.19
 
 *******************************************************************************/
 
@@ -56,7 +56,7 @@ private:
 
     // managing variables 
     // ----------------------------
-    std::ifstream m_file; // read_only from file
+    std::ifstream m_file; // read_only mode
     int m_socket_file_descriptor;
     struct sockaddr_in m_server_address;
     std::string m_buffer;
