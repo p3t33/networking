@@ -8,7 +8,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 12.11.19
-* Last update: 12.11.19
+* Last update: 24.11.19
 
 *******************************************************************************/
 
@@ -31,10 +31,11 @@ namespace med
 class UDPClient
 {
 
+private:
+    static const size_t buffer_size = 80;
+
 public:
-    UDPClient(std::string port = "8080",
-             std::string ip_address = "127.0.0.1",
-             std::string file_name = "file");
+    UDPClient(std::string port = "8080", std::string file_name = "file");
     ~UDPClient();
 
     UDPClient(const UDPClient&) = delete;
@@ -51,7 +52,7 @@ private:
 
     // Auxilary ctor functions
     // ------------------------------------------------------------------
-    void configure_socket(size_t port, std::string& ip_address);
+    void configure_socket(size_t port);
 
     // managing variables 
     // ----------------------------

@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 12.11.19
-* Last update: 12.11.19
+* Last update: 24.11.19
 *******************************************************************************/
 
 
@@ -28,7 +28,6 @@
 /*                                                           global variables */
 /*                                                           ~~~~~~~~~~~~~~~~ */
 static const int failed_to_create_socket = -1;
-static const int connected_successfully = 0;
 
 /*============================================================================*/
 namespace med
@@ -42,19 +41,17 @@ namespace med
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                                                         Constructor / ctor */
 /*                                                         ~~~~~~~~~~~~~~~~~~ */
-UDPClient::UDPClient(std::string port,
-                     std::string ip_address,
-                     std::string file_name):
-                                                m_file(),
-                                                m_socket_file_descriptor(0),
-                                                m_server_address({}),
-                                                m_buffer("")
+UDPClient::UDPClient(std::string port, std::string file_name):
+                                                    m_file(),
+                                                    m_socket_file_descriptor(0),
+                                                    m_server_address({}),
+                                                    m_buffer("")
 {
     std::cout << "=================== Client ====================" << std::endl;
 
     m_file.open(file_name, std::ios::binary);
     std::string::size_type sizet;   // alias of size_t
-    configure_socket(std::stoi (port ,&sizet), ip_address);
+    configure_socket(std::stoi (port ,&sizet));
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -74,7 +71,7 @@ UDPClient::~UDPClient()
 /*                                                    ~~~~~~~~~~~~~~~~~~~~~~~ */
 void UDPClient::communicate_with_server()
 {
-    char buffer[80] = {0};
+    char buffer[buffer_size] = {0};
     std::string word;
     char const *message = "ping"; 
     socklen_t address_length = sizeof(m_server_address);
@@ -82,20 +79,23 @@ void UDPClient::communicate_with_server()
     for (size_t i = 0; i < 5; ++ i)
     {
         sleep(1);
-        sendto(m_socket_file_descriptor, (const char *)message, strlen(message), 
-        MSG_CONFIRM, (const struct sockaddr *) &m_server_address, sizeof(m_server_address));  
+        sendto(m_socket_file_descriptor,
+               reinterpret_cast<const char *>(message),
+               strlen(message), 
+               MSG_CONFIRM,
+               reinterpret_cast<sockaddr*> (&m_server_address),
+               sizeof(m_server_address));  
                                 
-        ssize_t number_of_read_bytes = recvfrom(m_socket_file_descriptor,
-                                                (char *)buffer,
-                                                sizeof(buffer),  
-                                                MSG_WAITALL,
-                                                (struct sockaddr *) &m_server_address, 
-                                                &address_length); 
-        buffer[number_of_read_bytes] = '\0'; 
-        printf("Server : %s\n", buffer); 
-  
-    }    
-   // write(m_socket_file_descriptor, "_end_of_file_" ,13);
+        recvfrom(m_socket_file_descriptor,
+                 static_cast<char*>(buffer),
+                 buffer_size,  
+                 MSG_WAITALL,
+                 reinterpret_cast<sockaddr*> (&m_server_address), 
+                 &address_length); 
+
+        word.assign(buffer);
+        std::cout << "Received from server: " << word << std::endl;
+    }        
 }
 
 /*============================================================================*/
@@ -103,10 +103,8 @@ void UDPClient::communicate_with_server()
 /*============================================================================*/
 /*                                                           configure_socket */
 /*                                                           ~~~~~~~~~~~~~~~~ */
-void UDPClient::configure_socket(size_t port, std::string& ip_address)
+void UDPClient::configure_socket(size_t port)
 {
-    // TODO: socket(AF_INET, SOCK_DGRAM, 0)) < 0
-    // create socket
     m_socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, 0); 
     if (failed_to_create_socket == m_socket_file_descriptor)
     {
@@ -116,7 +114,7 @@ void UDPClient::configure_socket(size_t port, std::string& ip_address)
     // assign address family, IP, PORT 
     m_server_address.sin_family = AF_INET; 
     m_server_address.sin_addr.s_addr = INADDR_ANY; 
-    m_server_address.sin_port = htons(8080); // comunication port
+    m_server_address.sin_port = htons(port); // comunication port
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

@@ -6,7 +6,7 @@
 * #Version: V 1.0
 * Writer: Kobi Medrish       
 * Created: 5.11.19
-* Last update: 11.11.19
+* Last update: 24.11.19
 *******************************************************************************/
 
 /*============================================================================*/
@@ -61,7 +61,7 @@ class TCPUDPServer::ThreadData
 
 
 /*============================================================================*/
-/*                                Class TCPUDPServer                             */
+/*                                Class TCPUDPServer                          */
 /*============================================================================*/
 /*                               ~~~~~~~~~~~~~~~~~                            */
 /*                               special functions                            */
@@ -203,7 +203,7 @@ void TCPUDPServer::communicate_with_udp_client(std::shared_ptr<ThreadData> data)
         sleep(1);
         // no need to use an epoll, recvfrom will do the blocking.
         recvfrom(data->m_communication_socket[SOCKET_FD],
-                static_cast<char *>(buffer),
+                 static_cast<char *>(buffer),
                  sizeof(buffer),  
                  MSG_WAITALL,
                  reinterpret_cast<sockaddr*>(&data->m_address[CLIENT]), 
